@@ -1,13 +1,6 @@
-<p align="center">
-  <h1 align="center">RASP Viewer</h1>
-  <p align="center">A web app for visualizing RASP forecasts as seen on</p>
-  <a href="https://aufwin.de/">
-    <img src="img/logo.svg" alt="aufwin.de logo">
-  </a>
-
-  <h3 align="center">aufwin.de</h3>
-
-</p>
+<h1 align="center">RASP Viewer</h1>
+<p align="center">A web app for visualizing RASP forecasts as seen on</p>
+<p align="center"><a href="https://aufwin.de/"><img src="img/logo.svg" alt="aufwin.de logo"></a></p>
 
 ## How do I get RASP forecasts?
 
