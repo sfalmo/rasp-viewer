@@ -194,7 +194,7 @@ const cLayers = {
 
 const cDefaults = {
     // The data is expected at forecastServerResults/OUT/<region>/<run date>/<day>
-    forecastServerResults: "results",
+    forecastServerResults: "../results",
     baseLayer: dict["Topography"],
     overlays: [],
     zoom: 7,
