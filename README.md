@@ -1,13 +1,12 @@
 <p align="center">
+  <h1 align="center">RASP Viewer</h1>
+  <p align="center">A web app for visualizing RASP forecasts as seen on</p>
   <a href="https://aufwin.de/">
-    <img src="logo.svg" alt="aufwin.de logo">
+    <img src="img/logo.svg" alt="aufwin.de logo">
   </a>
 
-  <h1 align="center">aufwin.de</h1>
+  <h3 align="center">aufwin.de</h3>
 
-  <p align="center">
-    A web app for viewing RASP weather forecasts
-  </p>
 </p>
 
 ## How do I get RASP forecasts?
@@ -16,8 +15,7 @@ This web app is a frontend for visualizing meteorological data obtained by runni
 RASP is a set of numerical weather prediction tools which are specialized to produce detailed weather forecasts for glider pilots.
 To get started with RASP, check out [the official website](http://www.drjack.info/RASP/index.html) and [the RASP forum](http://www.drjack.info/cgi-bin/rasp-forum.cgi).
 
-Forecasts can be produced with assets contained in [this repository](https://github.com/sfalmo/rasp-from-scratch).
-This RASP viewer was originally developed for [aufwin.de](https://aufwin.de).
+Forecasts such as the ones on [aufwin.de](aufwin.de) can be produced with assets contained in [this repository](https://github.com/sfalmo/rasp-from-scratch).
 
 ## Forecast Viewer
 
