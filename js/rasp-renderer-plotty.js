@@ -76,7 +76,7 @@ L.RaspRendererPlotty = L.Class.extend({
         } else {
             for (let i = 0; i < georaster.height; i++) {
                 for (let j = 0; j < georaster.width; j++) {
-                    this.data[i * georaster.width + j] = georaster.values[0][i-1][j];
+                    this.data[i * georaster.width + j] = georaster.values[0][i][j];
                 }
             }
         }
