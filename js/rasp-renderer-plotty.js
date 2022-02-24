@@ -66,20 +66,15 @@ L.RaspRendererPlotty = L.Class.extend({
         this.targetCanvas.getContext('2d').drawImage(this.workingCanvas, 0, 0);
     },
     _updateDataset: function(georaster, dummy) {
-        // It seems like the data has to be shifted down by 1 pixel, but I do not know why
-        // This is a plotting issue, the data in georaster is definitely correct (checked with QGIS)
         this.data = new Float32Array(georaster.width * georaster.height);
-        for (let i = 0; i < georaster.width; i++) {
-            this.data[i] = georaster.noDataValue;
-        }
         if (dummy) {
-            for (let i = 1; i < georaster.height; i++) {
+            for (let i = 0; i < georaster.height; i++) {
                 for (let j = 0; j < georaster.width; j++) {
                     this.data[i * georaster.width + j] = georaster.noDataValue;
                 }
             }
         } else {
-            for (let i = 1; i < georaster.height; i++) {
+            for (let i = 0; i < georaster.height; i++) {
                 for (let j = 0; j < georaster.width; j++) {
                     this.data[i * georaster.width + j] = georaster.values[0][i-1][j];
                 }
