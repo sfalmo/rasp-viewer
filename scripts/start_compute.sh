@@ -54,6 +54,6 @@ gcloud compute --project="$project" instances create-with-container "rasp-comput
        --container-image="europe-west3-docker.pkg.dev/$project/rasp/rasp:WRFv4.3.3-znver3_$REGION" \
        --container-restart-policy=always \
        --container-privileged --container-stdin --container-tty \
-       --container-env=START_DAY="$day",OFFSET_HOUR=0,WEBSERVER_SEND=1,SSH_KEY="$sshkey",WEBSERVER_HOST="$hostname",WEBSERVER_USER="$USER",WEBSERVER_RESULTSDIR="$resultsdir",REQUEST_DELETE=1 \
+       --container-env=START_DAY="$day",OFFSET_HOUR=0,WEBSERVER_SEND=1,SSH_KEY="$sshkey",WEBSERVER_HOST="$hostname",WEBSERVER_USER="$LOGNAME",WEBSERVER_RESULTSDIR="$resultsdir",REQUEST_DELETE=1 \
        --tags=rasp-compute
 echo "Done"
