@@ -18,13 +18,15 @@ L.RaspRendererWindbarbs = L.Class.extend({
     _doRender: function() {
         this.layerGroup.clearLayers();
         this.barbs = [];
-        this.minDist = Math.pow(2, 6.5 - this._map.getZoom());
-        var strideX = Math.ceil(this.minDist / this.georasterSpeed.pixelWidth);
-        var strideY = Math.ceil(this.minDist/ this.georasterSpeed.pixelHeight);
+        var stride = Math.ceil(100 * 2**(7 - this._map.getZoom()));
         var bounds = this._map.getBounds();
-        for (let i = Math.floor(strideY / 2); i < this.georasterSpeed.height - Math.floor(strideY / 2); i += strideY) {
-            for (let j = Math.floor(strideX / 2); j < this.georasterSpeed.width - Math.floor(strideX / 2); j += strideX) {
-                var position = this._getPosition(this.georasterSpeed, i, j);
+        var xmin = this.georasterSpeed.xmin;
+        var ymax = this.georasterSpeed.ymax;
+        var pixelWidth = this.georasterSpeed.pixelWidth;
+        var pixelHeight = this.georasterSpeed.pixelHeight;
+        for (let i = Math.floor(stride / 2); i < this.georasterSpeed.height - Math.floor(stride / 2); i += stride) {
+            for (let j = Math.floor(stride / 2); j < this.georasterSpeed.width - Math.floor(stride / 2); j += stride) {
+                var position = this._getPosition(xmin, ymax, pixelWidth, pixelHeight, i, j);
                 if (!bounds.contains(position)) {
                     continue;
                 }
@@ -53,10 +55,10 @@ L.RaspRendererWindbarbs = L.Class.extend({
             }
         });
     },
-    _getPosition(georaster, i, j) {
-        var lat = georaster.ymax - (i + 0.5) * georaster.pixelHeight;
-        var lng = georaster.xmin + (j + 0.5) * georaster.pixelHeight;
-        return [lat, lng];
+    _getPosition(xmin, ymax, pixelWidth, pixelHeight, i, j) {
+        var x = xmin + (j + 0.5) * pixelWidth;
+        var y = ymax - (i + 0.5) * pixelHeight;
+        return L.CRS.EPSG3857.unproject(L.point(x, y));
     },
     _getFlagSvgPath: function(speed) {
         var ten   = 0;

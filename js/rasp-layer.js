@@ -65,7 +65,7 @@ L.RaspLayer = L.Layer.extend({
     },
     _render: function(georasters, parameter) {
         this.windbarbRenderer.clear();
-        this.overlay.setBounds([[georasters[0].ymin, georasters[0].xmin], [georasters[0].ymax, georasters[0].xmax]]);
+        this.overlay.setBounds([L.CRS.EPSG3857.unproject(L.point(georasters[0].xmin, georasters[0].ymin)), L.CRS.EPSG3857.unproject(L.point(georasters[0].xmax, georasters[0].ymax))]);
         // The base parameter is always displayed as a heatmap (currently realized via the plotty renderer)
         if (!parameter.composite) {
             this.plottyRenderer.render(georasters[0], {domain: this.domains[0], unit: this.units[0], colorscale: parameter.colorscale});
