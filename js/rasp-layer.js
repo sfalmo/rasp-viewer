@@ -94,15 +94,17 @@ L.RaspLayer = L.Layer.extend({
         this.setOpacity(this.opacityLevel);
     },
     _updateValueIndicator(lat, lng) {
+        if (!lat || !lng) return;
         this._lastLat = lat;
         this._lastLng = lng;
-        var bounds = this.overlay.getBounds();
-        var x = Math.floor((lng - bounds._southWest.lng) / (bounds._northEast.lng - bounds._southWest.lng) * this.georasters[0].width);
-        var y = Math.floor((bounds._northEast.lat - lat) / (bounds._northEast.lat - bounds._southWest.lat) * this.georasters[0].height);
+        var {x, y} = L.CRS.EPSG3857.project({lat, lng});
+        // The (0, 0) index of the georaster data is at the top left corner
+        var ix = Math.floor((x - this.georasters[0].xmin) / (this.georasters[0].xmax - this.georasters[0].xmin) * this.georasters[0].width);
+        var iy = Math.floor((this.georasters[0].ymax - y) / (this.georasters[0].ymax - this.georasters[0].ymin) * this.georasters[0].height);
         var values = [];
-        if (x >= 0 && x < this.georasters[0].width && y >= 0 && y < this.georasters[0].height) { // we are inside the domain
+        if (ix >= 0 && ix < this.georasters[0].width && iy >= 0 && iy < this.georasters[0].height) { // we are inside the domain
             this.georasters.forEach((georaster, i) => {
-                values[i] = georaster.values[0][y][x].toFixed(0);
+                values[i] = georaster.values[0][iy][ix].toFixed(0);
             });
         }
         var valueText = "";

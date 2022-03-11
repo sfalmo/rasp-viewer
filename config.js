@@ -2,9 +2,7 @@
 const cModels = {
     "TIR": {
         "description": "TIR 2km",
-        "center":   ["49.9771652", "12.0000000"],
-        "swcorner": ["48.1308060", "9.0694275"],
-        "necorner": ["51.8235283", "14.9305725"],
+        "center":   ["50", "12"],
         "resolution": 2, // in km
         "zoom": 7,
         "parameters": [
