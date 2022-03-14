@@ -45,25 +45,21 @@ body {
     width: 100%;
 }
 
-.imagePopup {
-    width: 550px;
-    height: 550px;
-}
-@media (orientation: portrait) {
-    .imagePopup {
-        max-width: 70vw;
+@media (orientation: landscape) {
+    .imagePlot {
+        width: 40vw;
         height: auto;
     }
 }
-@media (orientation: landscape) {
-    .imagePopup {
+@media (orientation: portrait) {
+    .imagePlot {
         width: auto;
-        max-height: 60vh;
+        height: 50vh;
     }
 }
 
 #sideScaleDiv {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     width: 50px;
     height: 100%;
     display: flex;
@@ -71,16 +67,36 @@ body {
 }
 
 #bottomScaleDiv {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     width: 100%;
-    height: 30px;
+    height: 20px;
     display: flex;
     flex-direction: row;
 }
 
-.scaleUnit, .scaleMax, .scaleMin {
+#bottomPlot {
     text-align: center;
-    padding: 5px;
+}
+
+@media (orientation: landscape) {
+    #bottomScaleDiv, #bottomPlot {
+        display: none;
+    }
+}
+@media (orientation: portrait) {
+    #sideScaleDiv, #sidePlot {
+        display: none;
+    }
+}
+
+#sideScaleDiv > .scaleUnit, #sideScaleDiv > .scaleMax, #sideScaleDiv > .scaleMin {
+    text-align: center;
+    padding: 0 2px;
+}
+
+#bottomScaleDiv > .scaleUnit, #bottomScaleDiv > .scaleMax, #bottomScaleDiv > .scaleMin {
+    vertical-align: middle;
+    padding: 0 5px;
 }
 
 .scaleUnit {
@@ -130,24 +146,12 @@ body {
 
 .bottomScaleIndicatorValue {
     position: absolute;
-    display: flex;
-    align-items: center;
-    padding: 0 3px 0 3px;
+    vertical-align: middle;
+    padding: 0 3px;
     bottom: 0;
     height: 100%;
     background-color: rgba(255,255,255,0.5);
     border-left: 2px solid black;
-}
-
-@media (orientation: landscape) {
-    #bottomScaleDiv {
-        display: none;
-    }
-}
-@media (orientation: portrait) {
-    #sideScaleDiv {
-        display: none;
-    }
 }
 
 .leaflet-container .leaflet-control-attribution {

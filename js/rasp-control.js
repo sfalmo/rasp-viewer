@@ -7,6 +7,8 @@ import raspLayer from './rasp-layer.js';
 
 L.Control.RASPControl = L.Control.extend({
     loadingAnimation: document.getElementById("loadingAnimation"),
+    sidePlot: document.getElementById("sidePlot"),
+    bottomPlot: document.getElementById("bottomPlot"),
     meteogramIcon: L.icon({
         iconUrl: cDefaults.meteogramMarker,
         iconSize: [cDefaults.markerSize, cDefaults.markerSize]
@@ -23,12 +25,21 @@ L.Control.RASPControl = L.Control.extend({
         this.raspLayer = raspLayer().addTo(map);
         this.validIndicator = validIndicator().addTo(map);
 
-        this.loadingMeta = false;
-        this.loadingPlot = false;
+        this.sidePlot.onclick = e => {
+            var button = e.target.closest('button');
+            if (button && button.className == 'btn-close') {
+                this._closePlot();
+            }
+        };
+        this.bottomPlot.onclick = e => {
+            var button = e.target.closest('button');
+            if (button && button.className == 'btn-close') {
+                this._closePlot();
+            }
+        };
 
-        this._map.on('popupclose', e => {
-            this.currentPopup = null;
-        });
+        this.loadingMeta = false;
+        this.loadingBlipmap = false;
 
         this.datetimeSelector = datetimeSelector(this).addTo(map);
         this.datetimeSelector.init()
@@ -187,9 +198,9 @@ L.Control.RASPControl = L.Control.extend({
         this.toggleSoundingsOrMeteograms();
         this.doParameterList(); // could have different parameters
         this.parameterChange();
-        if (this.currentPopup && this.currentPopup.type == "meteogram") {
-            this.currentPopup.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + this.currentPopup.key + ".png";
-            this.currentPopup.image.src = this.currentPopup.imageUrl;
+        if (this.currentPlot && this.currentPlot.type == "meteogram") {
+            this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + this.currentPlot.key + ".png";
+            this.currentPlot.image.src = this.currentPlot.imageUrl;
         }
     },
     parameterCategoryChange: function() {
@@ -203,7 +214,14 @@ L.Control.RASPControl = L.Control.extend({
         this.update();
     },
     _loading: function() {
-        return this.loadingMeta || this.loadingPlot || (this.currentPopup && !this.currentPopup.image.complete);
+        return this.loadingMeta || this.loadingBlipmap || (this.currentPlot && !this.currentPlot.image.complete);
+    },
+    _armLoadingAnimation: function() {
+        setTimeout(() => {
+            if (this._loading()) {
+                this.loadingAnimation.style.visibility = "visible";
+            }
+        }, cDefaults.loadingAnimationDelay);
     },
     _hideLoadingAnimationMaybe: function() {
         if (!this._loading()) {
@@ -215,17 +233,13 @@ L.Control.RASPControl = L.Control.extend({
         var parameterKey = this.parameterSelect.value;
         var parameter = cParameters[parameterKey];
         var urls = this.getDataUrls(dir, parameterKey, time);
-        this._updatePlot(urls.geotiffUrls, parameter);
-        if (this.currentPopup && this.currentPopup.type == "sounding") {
-            this.currentPopup.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/sounding" + this.currentPopup.key + ".curr." + time + "lst.d2.png";
-            this.currentPopup.image.src = this.currentPopup.imageUrl;
+        this._updateBlipmap(urls.geotiffUrls, parameter);
+        if (this.currentPlot && this.currentPlot.type == "sounding") {
+            this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/sounding" + this.currentPlot.key + ".curr." + time + "lst.d2.png";
+            this.currentPlot.image.src = this.currentPlot.imageUrl;
         }
         this._updateMeta(urls.metaUrl, parameter.longname, day);
-        setTimeout(() => {
-            if (this._loading()) {
-                this.loadingAnimation.style.visibility = "visible";
-            }
-        }, cDefaults.loadingAnimationDelay);
+        this._armLoadingAnimation();
     },
     _updateMeta: function(metaUrl, parameterLongname, day) {
         this.loadingMeta = true;
@@ -252,8 +266,8 @@ L.Control.RASPControl = L.Control.extend({
                 this._hideLoadingAnimationMaybe();
             });
     },
-    _updatePlot: function(geotiffUrls, parameter) {
-        this.loadingPlot = true;
+    _updateBlipmap: function(geotiffUrls, parameter) {
+        this.loadingBlipmap = true;
         Promise.all(geotiffUrls.map(url => fetch(url)))
             .then(responses => {
                 if (responses.every(response => response.ok)) {
@@ -272,7 +286,7 @@ L.Control.RASPControl = L.Control.extend({
                 this.raspLayer.invalidate();
             })
             .finally(() => {
-                this.loadingPlot = false;
+                this.loadingBlipmap = false;
                 this._hideLoadingAnimationMaybe();
             });
     },
@@ -280,31 +294,48 @@ L.Control.RASPControl = L.Control.extend({
         if (this.soundingCheckbox.checked) {
             this.soundingOverlay.addTo(this._map);
         } else {
-            if (this.currentPopup && this.currentPopup.type == "sounding") {
-                this.currentPopup.popup.remove();
+            if (this.currentPlot && this.currentPlot.type == "sounding") {
+                this._closePlot();
             }
             this.soundingOverlay.remove();
         }
         if (this.meteogramCheckbox.checked) {
             this.meteogramOverlay.addTo(this._map);
         } else {
-            if (this.currentPopup && this.currentPopup.type == "meteogram") {
-                this.currentPopup.popup.remove();
+            if (this.currentPlot && this.currentPlot.type == "meteogram") {
+                this._closePlot();
             }
             this.meteogramOverlay.remove();
         }
     },
-    updatePopup: function() {
-        var popupContent = document.createElement('div');
-        var popupLink = document.createElement("A");
-        popupLink.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48'><path d='M38 38H10V10h14V6H10c-2.21 0-4 1.79-4 4v28c0 2.21 1.79 4 4 4h28c2.21 0 4-1.79 4-4V24h-4v14zM28 6v4h7.17L15.51 29.66l2.83 2.83L38 12.83V20h4V6H28z'/></svg>";
-        popupLink.href = this.currentPopup.imageUrl;
-        popupLink.title = dict["Show in separate window"];
-        popupLink.target = "_blank";
-        popupContent.appendChild(popupLink);
-        popupContent.appendChild(this.currentPopup.image);
-        this.currentPopup.popup.setContent(popupContent);
-        this.loadingAnimation.style.visibility = "hidden";
+    _closePlot: function() {
+        this.sidePlot.innerHTML = "";
+        this.bottomPlot.innerHTML = "";
+        this._map.invalidateSize();
+        this.currentPlot = null;
+    },
+    _updatePlot: function() {
+        var plotContent = document.createElement('div');
+        var plotHeader = document.createElement('div');
+        plotHeader.style.display = "flex";
+        plotHeader.style.justifyContent = "space-between";
+        var plotLink = document.createElement("A");
+        plotLink.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48'><path d='M38 38H10V10h14V6H10c-2.21 0-4 1.79-4 4v28c0 2.21 1.79 4 4 4h28c2.21 0 4-1.79 4-4V24h-4v14zM28 6v4h7.17L15.51 29.66l2.83 2.83L38 12.83V20h4V6H28z'/></svg>";
+        plotLink.href = this.currentPlot.imageUrl;
+        plotLink.title = dict["Show in separate window"];
+        plotLink.target = "_blank";
+        var plotClose = document.createElement("button");
+        plotClose.type = "button";
+        plotClose.classList.add("btn-close");
+        plotHeader.appendChild(plotLink);
+        plotHeader.appendChild(plotClose);
+        plotContent.appendChild(plotHeader);
+        plotContent.appendChild(this.currentPlot.image);
+        this.sidePlot.innerHTML = "";
+        this.bottomPlot.innerHTML = "";
+        this.sidePlot.appendChild(plotContent);
+        this.bottomPlot.appendChild(plotContent.cloneNode(true));
+        this._hideLoadingAnimationMaybe();
     },
     getSoundingMarkers: function(modelKey) {
         var markers = [];
@@ -317,22 +348,15 @@ L.Control.RASPControl = L.Control.extend({
                     .on('click', e => {
                         var dir = this.datetimeSelector.get().dir;
                         var time = this.datetimeSelector.get().time;
-                        this.currentPopup = {type: "sounding", key: soundingKey};
-                        this.currentPopup.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/sounding" + soundingKey + ".curr." + time + "lst.d2.png";
-                        this.currentPopup.popup = L.popup({maxWidth: "auto"})
-                            .setLatLng(e.target.getLatLng())
-                            .openOn(this._map);
-                        this.currentPopup.image = new Image();
-                        this.currentPopup.image.setAttribute("class", "imagePopup");
-                        this.currentPopup.image.onload = () => {
-                            this.updatePopup();
+                        this.currentPlot = {type: "sounding", key: soundingKey};
+                        this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/sounding" + soundingKey + ".curr." + time + "lst.d2.png";
+                        this.currentPlot.image = new Image();
+                        this.currentPlot.image.setAttribute("class", "imagePlot");
+                        this.currentPlot.image.onload = () => {
+                            this._updatePlot();
                         };
-                        this.currentPopup.image.src = this.currentPopup.imageUrl;
-                        setTimeout(() => {
-                            if (!this.currentPopup.image.complete) {
-                                this.loadingAnimation.style.visibility = "visible";
-                            }
-                        }, cDefaults.loadingAnimationDelay);
+                        this.currentPlot.image.src = this.currentPlot.imageUrl;
+                        this._armLoadingAnimation();
                     })
             );
         }
@@ -349,22 +373,15 @@ L.Control.RASPControl = L.Control.extend({
                     .on('click', e => {
                         var dir = this.datetimeSelector.get().dir;
                         var time = this.datetimeSelector.get().time;
-                        this.currentPopup = {type: "meteogram", key: meteogramKey};
-                        this.currentPopup.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + meteogramKey + ".png";
-                        this.currentPopup.popup = L.popup({maxWidth: "auto"})
-                            .setLatLng(e.target.getLatLng())
-                            .openOn(this._map);
-                        this.currentPopup.image = new Image();
-                        this.currentPopup.image.setAttribute("class", "imagePopup");
-                        this.currentPopup.image.onload = () => {
-                            this.updatePopup();
+                        this.currentPlot = {type: "meteogram", key: meteogramKey};
+                        this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + meteogramKey + ".png";
+                        this.currentPlot.image = new Image();
+                        this.currentPlot.image.setAttribute("class", "imagePlot");
+                        this.currentPlot.image.onload = () => {
+                            this._updatePlot();
                         };
-                        this.currentPopup.image.src = this.currentPopup.imageUrl;
-                        setTimeout(() => {
-                            if (!this.currentPopup.image.complete) {
-                                this.loadingAnimation.style.visibility = "visible";
-                            }
-                        }, cDefaults.loadingAnimationDelay);
+                        this.currentPlot.image.src = this.currentPlot.imageUrl;
+                        this._armLoadingAnimation();
                     })
             );
         }
