@@ -34,6 +34,9 @@ L.Control.RASPControl = L.Control.extend({
         this.datetimeSelector.init()
             .then(() => {
                 this.modelDayChange();
+            })
+            .catch(() => {
+                this.validIndicator.update(dict["dataMissing"], false);
             });
 
         return this._container;
