@@ -4,10 +4,9 @@ L.Control.ValueIndicator = L.Control.extend({
         opacity: 1
     },
     onAdd: function (map) {
-        this._container = L.DomUtil.create('div', 'leaflet-control-attribution bg-light');
+        this._container = L.DomUtil.create('div', 'leaflet-control-attribution bg-light user-select-none');
         this._parameter = L.DomUtil.create('span', 'fw-bold h5', this._container);
         this._value = L.DomUtil.create('span', 'ps-2 text-nowrap', this._container);
-        L.DomEvent.disableClickPropagation(this._container);
         return this._container;
     },
     onRemove: function (map) {

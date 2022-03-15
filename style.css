@@ -69,7 +69,6 @@ body {
 #bottomScaleDiv {
     flex: 0 0 auto;
     width: 100%;
-    height: 20px;
     display: flex;
     flex-direction: row;
 }
@@ -95,7 +94,6 @@ body {
 }
 
 #bottomScaleDiv > .scaleUnit, #bottomScaleDiv > .scaleMax, #bottomScaleDiv > .scaleMin {
-    vertical-align: middle;
     padding: 0 5px;
 }
 
@@ -160,30 +158,19 @@ body {
 }
 .leaflet-control-layers {
     margin-right: 10px;
-    max-width: 80ch;
 }
 .leaflet-control-layers-expanded {
-    padding: 6px;
+    padding: 5px;
+}
+.rasp-control {
+    max-width: 458px;
 }
 .rasp-control .leaflet-control-layers-toggle {
     background-image: url(img/rasp_control.svg);
 }
 .parameterCategoryIcon {
-    width: 36px;
-    height: 36px;
+    width: 100%;
     fill: currentColor;
-}
-@media (max-width: 768px) {
-    .parameterCategoryIcon {
-        width: 24px;
-        height: 24px;
-    }
-}
-@media (max-width: 576px) {
-    .parameterCategoryIcon {
-        width: 20px;
-        height: 20px;
-    }
 }
 .parameterDescription {
     display: inline-block;
@@ -220,4 +207,8 @@ body {
 
 .leaflet-top {
     z-index: 1001;
+}
+
+#offcanvas-content {
+    padding: 5px;
 }

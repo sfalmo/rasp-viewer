@@ -9,6 +9,7 @@ L.Control.RASPControl = L.Control.extend({
     loadingAnimation: document.getElementById("loadingAnimation"),
     sidePlot: document.getElementById("sidePlot"),
     bottomPlot: document.getElementById("bottomPlot"),
+    _offcanvas: document.getElementById("offcanvas"),
     meteogramIcon: L.icon({
         iconUrl: cDefaults.meteogramMarker,
         iconSize: [cDefaults.markerSize, cDefaults.markerSize]
@@ -54,14 +55,12 @@ L.Control.RASPControl = L.Control.extend({
     },
     _initPanel: function() {
         this._container = L.DomUtil.create('div', 'leaflet-control-layers rasp-control');
-        if (!L.Browser.android) {
-            L.DomEvent.on(this._container, {
-                mouseenter: this.expand,
-            }, this);
-        }
         this._link = L.DomUtil.create('a', 'leaflet-control-layers-toggle', this._container);
 		    this._link.href = '#';
         this._link.title = 'RASP Control';
+        if (!L.Browser.android) {
+            L.DomEvent.on(this._link, 'mouseenter', this.expand, this);
+        }
         if (L.Browser.touch) {
             L.DomEvent.on(this._link, 'click', L.DomEvent.stop);
             L.DomEvent.on(this._link, 'click', this.expand, this);
@@ -74,7 +73,7 @@ L.Control.RASPControl = L.Control.extend({
         this._raspPanel = L.DomUtil.create('div', "leaflet-control-layers-list", this._container);
 
         var parameterDiv = L.DomUtil.create('div', 'mb-2', this._raspPanel);
-        this.parameterCategories = L.DomUtil.create('div', 'btn-group mb-1', parameterDiv);
+        this.parameterCategories = L.DomUtil.create('div', 'btn-group d-flex mb-1', parameterDiv);
         this.parameterCategories.setAttribute('data-bs-toggle', 'buttons');
         var defaultCategory = cParameters[cDefaults.parameter].category;
         for (const category of cCategories) {
@@ -84,12 +83,7 @@ L.Control.RASPControl = L.Control.extend({
             catRadio.type = "radio";
             catRadio.value = category;
             catLabel.style.cursor = "pointer";
-            // catLabel.innerHTML += `<img class='parameterCategoryIcon' src='img/${category}.svg'>`;
-            catLabel.innerHTML += `
-<svg class="parameterCategoryIcon">
-  <use xlink:href="img/sprites.svg#${category}"></use>
-</svg>
-`;
+            catLabel.innerHTML += `<svg viewBox="0 0 36 36" class="parameterCategoryIcon"><use xlink:href="img/sprites.svg#${category}"></use></svg>`;
             catLabel.title = dict["parameterCategory_" + category + "_title"];
             catRadio.id = catLabel.title;
             catLabel.htmlFor = catRadio.id;
@@ -144,17 +138,47 @@ L.Control.RASPControl = L.Control.extend({
         this._collapseLink.title = 'Panel minimieren';
         this._collapseLink.href = '#';
         L.DomEvent.on(this._collapseLink, 'click', this.collapse, this);
+
+        this.togglePanelOrOffcanvas();
+        window.onresize = () => { this.togglePanelOrOffcanvas(); };
     },
-    onRemove: function(map) {
-        // Nothing to do here
+    toOffcanvas: function() {
+        this.collapse();
+        this.isOffcanvas = true;
+        L.DomEvent.off(this._link, 'mouseenter', this.expand, this);
+        document.getElementById("offcanvas-content").appendChild(this._raspPanel);
+        this._collapseLink.style.display = "none";
+        this._link.href = "#offcanvas";
+        this._link.setAttribute("data-bs-toggle", "offcanvas");
+    },
+    toPanel: function() {
+        L.DomEvent.on(this._link, 'mouseenter', this.expand, this);
+        this._container.appendChild(document.getElementById("offcanvas-content").children[0]);
+        this._collapseLink.style.display = "block";
+        this._link.href = "#";
+        this._link.removeAttribute("data-bs-toggle");
+        var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById("offcanvas"));
+        offcanvas.hide();
+        this.isOffcanvas = false;
+        this.expand();
+    },
+    togglePanelOrOffcanvas: function() {
+        if (window.innerWidth < 768 && !this.isOffcanvas) {
+            this.toOffcanvas();
+        }
+        if (window.innerWidth > 768 && this.isOffcanvas) {
+            this.toPanel();
+        }
     },
     expand: function () {
-        L.DomUtil.addClass(this._container, 'leaflet-control-layers-expanded');
-        return this;
+        if (!this.isOffcanvas) {
+            L.DomUtil.addClass(this._container, 'leaflet-control-layers-expanded');
+        }
     },
     collapse: function () {
-        L.DomUtil.removeClass(this._container, 'leaflet-control-layers-expanded');
-        return this;
+        if (!this.isOffcanvas) {
+            L.DomUtil.removeClass(this._container, 'leaflet-control-layers-expanded');
+        }
     },
     getDataUrls: function(modelDir, parameterKey, time) {
         var baseUrls = [cDefaults.forecastServerResults + "/OUT/" + modelDir + "/" + parameterKey + "."]; // Default (no composite parameter)
@@ -197,7 +221,7 @@ L.Control.RASPControl = L.Control.extend({
         this.meteogramOverlay = this.getMeteogramMarkers(model);
         this.toggleSoundingsOrMeteograms();
         this.doParameterList(); // could have different parameters
-        this.parameterChange();
+        this.parameterCategoryChange();
         if (this.currentPlot && this.currentPlot.type == "meteogram") {
             this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + this.currentPlot.key + ".png";
             this.currentPlot.image.src = this.currentPlot.imageUrl;

@@ -8,7 +8,7 @@ L.Control.DatetimeSelector = L.Control.extend({
         this._raspControl = raspControl;
     },
     onAdd: function (map) {
-        this._container = L.DomUtil.create('div', 'leaflet-control-layers rasp-control');
+        this._container = L.DomUtil.create('div', 'leaflet-control-layers datetime-control');
         this._container.style.backgroundColor = "rgba(255, 255, 255, 0)";
         this._container.style.borderStyle = "none";
         L.DomEvent.disableClickPropagation(this._container);

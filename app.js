@@ -36,7 +36,7 @@ for (const overlay of cDefaults.overlays) {
 }
 
 // This sets up all RASP related controls and layers
-raspControl({position: cDefaults.RASPControlLocation}).addTo(map);
+var rc = raspControl({position: cDefaults.RASPControlLocation}).addTo(map);
 L.control.layers(cLayers.baseLayers, cLayers.overlays, {position: cDefaults.layersLocation}).addTo(map);
 
 // Leaflet needs this because the flexbox it is in does not evaluate to the right height at the beginning

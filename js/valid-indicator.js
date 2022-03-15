@@ -3,8 +3,7 @@ L.Control.ValidIndicator = L.Control.extend({
         position: 'topleft',
     },
     onAdd: function(map) {
-        this._container = L.DomUtil.create('div', 'leaflet-control-attribution');
-        L.DomEvent.disableClickPropagation(this._container);
+        this._container = L.DomUtil.create('div', 'leaflet-control-attribution user-select-none');
         return this._container;
     },
     onRemove: function(map) {
