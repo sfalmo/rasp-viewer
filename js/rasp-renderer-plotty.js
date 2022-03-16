@@ -1,39 +1,27 @@
 import * as plotty from 'plotty';
 
 L.RaspRendererPlotty = L.Class.extend({
-    options: {
-        sideScaleContainerId: "sideScaleDiv",
-        bottomScaleContainerId: "bottomScaleDiv",
-    },
-    initialize: function(map, canvas, options) {
+    initialize: function(map, canvas, sideScale, bottomScale, options) {
         this._map = map;
         this.targetCanvas = canvas;
         this.workingCanvas = document.createElement("canvas");
 
         // Color scales
-        var sideScaleContainer = document.getElementById(this.options.sideScaleContainerId);
-        this.sideScaleUnit = L.DomUtil.create('div', 'scaleUnit', sideScaleContainer);
-        this.sideScaleMax = L.DomUtil.create('div', 'scaleMax', sideScaleContainer);
-        var sideScaleCanvasContainer = L.DomUtil.create('div', 'sideScaleCanvasDiv', sideScaleContainer);
-        this.sideScaleCanvas = L.DomUtil.create('canvas', '', sideScaleCanvasContainer);
+        this.sideScaleUnit = sideScale.getElementsByClassName("scaleUnit")[0];
+        this.sideScaleMax = sideScale.getElementsByClassName("scaleMax")[0];
+        this.sideScaleCanvasContainer = sideScale.getElementsByClassName("scaleColorbar")[0];
+        this.sideScaleMin = sideScale.getElementsByClassName("scaleMin")[0];
+        this.sideScaleCanvas = this.sideScaleCanvasContainer.getElementsByTagName("canvas")[0];
         this.sideScaleCanvas.height = 256;
         this.sideScaleCanvas.width = 1;
-        this.sideScaleIndicator = L.DomUtil.create('div', 'sideScaleIndicator', sideScaleCanvasContainer);
-        this.sideScaleIndicatorMarker = L.DomUtil.create('div', 'sideScaleIndicatorMarker', this.sideScaleIndicator);
-        this.sideScaleIndicatorValue = L.DomUtil.create('div', 'sideScaleIndicatorValue', this.sideScaleIndicator);
-        this.sideScaleMin = L.DomUtil.create('div', 'scaleMin', sideScaleContainer);
 
-        var bottomScaleContainer = document.getElementById(this.options.bottomScaleContainerId);
-        this.bottomScaleMin = L.DomUtil.create('div', 'scaleMin', bottomScaleContainer);
-        var bottomScaleCanvasContainer = L.DomUtil.create('div', 'bottomScaleCanvasDiv', bottomScaleContainer);
-        this.bottomScaleCanvas = L.DomUtil.create('canvas', '', bottomScaleCanvasContainer);
+        this.bottomScaleMin = bottomScale.getElementsByClassName("scaleMin")[0];
+        this.bottomScaleCanvasContainer = bottomScale.getElementsByClassName("scaleColorbar")[0];
+        this.bottomScaleMax = bottomScale.getElementsByClassName("scaleMax")[0];
+        this.bottomScaleUnit = bottomScale.getElementsByClassName("scaleUnit")[0];
+        this.bottomScaleCanvas = this.bottomScaleCanvasContainer.getElementsByTagName("canvas")[0];
         this.bottomScaleCanvas.height = 1;
         this.bottomScaleCanvas.width = 256;
-        this.bottomScaleIndicator = L.DomUtil.create('div', 'bottomScaleIndicator', bottomScaleCanvasContainer);
-        this.bottomScaleIndicatorMarker = L.DomUtil.create('div', 'bottomScaleIndicatorMarker', this.bottomScaleIndicator);
-        this.bottomScaleIndicatorValue = L.DomUtil.create('div', 'bottomScaleIndicatorValue', this.bottomScaleIndicator);
-        this.bottomScaleMax = L.DomUtil.create('div', 'scaleMax', bottomScaleContainer);
-        this.bottomScaleUnit = L.DomUtil.create('div', 'scaleUnit', bottomScaleContainer);
 
         plotty.addColorScale("rasp", ["#004dff", "#01f8e9", "#34c00c", "#f8fd00", "#ff9b00", "#ff1400"], [0, 0.2, 0.4, 0.6, 0.8, 1]);
         plotty.addColorScale("bsratio", ["#00000040", "#00000020", "#00000020", "#00000000"], [0.2999999, 0.3, 0.6999999, 0.7]);
@@ -107,20 +95,6 @@ L.RaspRendererPlotty = L.Class.extend({
         this.bottomScaleMax.innerHTML = max;
         this.bottomScaleMin.innerHTML = min;
     },
-    updateScaleIndicator: function(value) {
-        this.sideScaleIndicator.style.visibility = 'visible';
-        this.bottomScaleIndicator.style.visibility = 'visible';
-        var posPercent = (value - this.sideScaleMin.innerHTML) / (this.sideScaleMax.innerHTML - this.sideScaleMin.innerHTML) * 100;
-        posPercent = Math.max(0, Math.min(100, posPercent));
-        this.sideScaleIndicator.style.bottom = `${posPercent}%`;
-        this.bottomScaleIndicator.style.left = `${posPercent}%`;
-        this.sideScaleIndicatorValue.innerHTML = value;
-        this.bottomScaleIndicatorValue.innerHTML = value;
-    },
-    hideScaleIndicator: function() {
-        this.sideScaleIndicator.style.visibility = 'hidden';
-        this.bottomScaleIndicator.style.visibility = 'hidden';
-    },
     // quantize: function(value) {
     //     this.plottyplot.setExpression(`floor(dataset / ${value} + 0.5) * ${value}`);
     // },
@@ -129,6 +103,6 @@ L.RaspRendererPlotty = L.Class.extend({
     // }
 });
 
-export default function(map, canvas, options) {
-    return new L.RaspRendererPlotty(map, canvas, options);
+export default function(map, canvas, sideScale, bottomScale, options) {
+    return new L.RaspRendererPlotty(map, canvas, sideScale, bottomScale, options);
 };

@@ -33,11 +33,46 @@
                 <div id="offcanvas-content" class="offcanvas-body"></div>
             </div>
             <div id='map'></div>
-            <div id="sideScaleDiv"></div>
-            <div id="sidePlot"></div>
+            <div id="sideScale">
+                <div class="scaleUnit"></div>
+                <div class="scaleMax"></div>
+                <div class="scaleColorbar">
+                    <canvas></canvas>
+                    <div class="scaleIndicator">
+                        <div class="scaleIndicatorValue"></div>
+                    </div>
+                </div>
+                <div class="scaleMin"></div>
+            </div>
+            <div id="sidePlotWrapper">
+                <div id="sidePlot" class="plot" style="display: none;">
+                    <div class="plotHeader">
+                        <button type="button" class="btn-close float-end" data-toggle="plotClose"></button>
+                    </div>
+                    <div class="plotContent"></div>
+                </div>
+            </div>
         </div>
-        <div id="bottomScaleDiv"></div>
-        <div id="bottomPlot"></div>
+        <div id="bottomScale">
+            <div class="scaleMin"></div>
+            <div class="scaleColorbar">
+                <canvas></canvas>
+                <div class="scaleIndicator">
+                    <div class="scaleIndicatorValue"></div>
+                </div>
+            </div>
+            <div class="scaleMax"></div>
+            <div class="scaleUnit"></div>
+        </div>
+        <div id="bottomPlotWrapper">
+            <div id="bottomPlot" class="plot" style="display: none;">
+                <div class="plotHeader">
+                    <h5></h5>
+                    <button type="button" class="btn-close float-end" data-toggle="plotClose"></button>
+                </div>
+                <div class="plotContent"></div>
+            </div>
+        </div>
         <script>
          translate();
         </script>

@@ -27,18 +27,22 @@ L.Control.RASPControl = L.Control.extend({
         this.raspLayer = raspLayer().addTo(map);
         this.validIndicator = validIndicator().addTo(map);
 
+        this.plotCanvas = document.createElement('canvas');
+
         this.sidePlot.onclick = e => {
             var button = e.target.closest('button');
-            if (button && button.className == 'btn-close') {
+            if (button && button.dataset.toggle == 'plotClose') {
                 this._closePlot();
             }
         };
         this.bottomPlot.onclick = e => {
             var button = e.target.closest('button');
-            if (button && button.className == 'btn-close') {
+            if (button && button.dataset.toggle == 'plotClose') {
                 this._closePlot();
             }
         };
+        this.sidePlotContent = this.sidePlot.getElementsByClassName("plotContent")[0];
+        this.bottomPlotContent = this.bottomPlot.getElementsByClassName("plotContent")[0];
 
         this.loadingMeta = false;
         this.loadingBlipmap = false;
@@ -103,6 +107,11 @@ L.Control.RASPControl = L.Control.extend({
         parameterSummary.innerHTML = dict["parameterDetails_summary"];
         this.parameterDescription = L.DomUtil.create('span', 'parameterDescription', parameterDetails);
 
+        this.crosssectionControl = L.DomUtil.create('button', 'btn btn-primary mb-1', this._raspPanel);
+        this.crosssectionControl.title = "Crosssection";
+        this.crosssectionControl.innerHTML = "Crosssection";
+        this.crosssectionControl.onclick = () => { this.showCrosssection(); };
+
         var miscControls = L.DomUtil.create('div', 'row align-items-center', this._raspPanel);
         var opacityDiv = L.DomUtil.create('div', 'col-auto btn-group', miscControls);
         var opacityDownButton = L.DomUtil.create('button', 'btn btn-sm btn-outline-secondary', opacityDiv);
@@ -133,11 +142,6 @@ L.Control.RASPControl = L.Control.extend({
         this.meteogramCheckbox.onchange = () => { this.toggleSoundingsOrMeteograms(); };
         var meteogramText = L.DomUtil.create('span', '', meteogramLabel);
         meteogramText.innerHTML = dict["Meteograms"];
-
-        this.crosssectionControl = L.DomUtil.create('button', 'btn btn-primary', this._raspPanel);
-        this.crosssectionControl.title = "Crosssection";
-        this.crosssectionControl.innerHTML = "Crosssection";
-        this.crosssectionControl.onclick = () => { this.showCrosssection(); };
 
         this._collapseLink = L.DomUtil.create('a', 'leaflet-control-collapse-button', this._raspPanel);
         this._collapseLink.innerHTML = '⇱';
@@ -344,32 +348,21 @@ L.Control.RASPControl = L.Control.extend({
         }
     },
     _closePlot: function() {
-        this.sidePlot.innerHTML = "";
-        this.bottomPlot.innerHTML = "";
+        this.sidePlot.style.display = "none";
+        this.bottomPlot.style.display = "none";
         this._map.invalidateSize();
         this.currentPlot = null;
     },
     _updatePlot: function() {
-        var plotContent = document.createElement('div');
-        var plotHeader = document.createElement('div');
-        plotHeader.style.display = "flex";
-        plotHeader.style.justifyContent = "space-between";
-        var plotLink = document.createElement("A");
-        plotLink.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48'><path d='M38 38H10V10h14V6H10c-2.21 0-4 1.79-4 4v28c0 2.21 1.79 4 4 4h28c2.21 0 4-1.79 4-4V24h-4v14zM28 6v4h7.17L15.51 29.66l2.83 2.83L38 12.83V20h4V6H28z'/></svg>";
-        plotLink.href = this.currentPlot.imageUrl;
-        plotLink.title = dict["Show in separate window"];
-        plotLink.target = "_blank";
-        var plotClose = document.createElement("button");
-        plotClose.type = "button";
-        plotClose.classList.add("btn-close");
-        plotHeader.appendChild(plotLink);
-        plotHeader.appendChild(plotClose);
-        plotContent.appendChild(plotHeader);
-        plotContent.appendChild(this.currentPlot.image);
-        this.sidePlot.innerHTML = "";
-        this.bottomPlot.innerHTML = "";
-        this.sidePlot.appendChild(plotContent);
-        this.bottomPlot.appendChild(plotContent.cloneNode(true));
+        this.sidePlot.style.display = "flex";
+        this.bottomPlot.style.display = "flex";
+        this.sidePlotContent.innerHTML = "";
+        this.bottomPlotContent.innerHTML = "";
+        if (this.currentPlot.type == "meteogram" || this.currentPlot.type == "sounding") {
+            this.currentPlot.image.style.objectFit = "contain";
+        }
+        this.sidePlotContent.appendChild(this.currentPlot.image);
+        this.bottomPlotContent.appendChild(this.currentPlot.image.cloneNode());
         this._hideLoadingAnimationMaybe();
     },
     getSoundingMarkers: function(modelKey) {

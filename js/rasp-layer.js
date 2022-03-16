@@ -10,20 +10,22 @@ L.RaspLayer = L.Layer.extend({
     onAdd: function(map) {
         this._map = map;
 
-        this.canvas = document.createElement('canvas');
-        this.overlay = L.imageOverlay(this.canvas.toDataURL(), [[0,1], [0,1]]).addTo(this._map);
-        this.windbarbs = L.layerGroup([], {pane: 'shadowPane'}).addTo(this._map);
-
         this.opacityLevel = cDefaults.opacityLevel;
         this.opacityDelta = cDefaults.opacityDelta;
         this.setOpacity(this.opacityLevel);
 
+        this.canvas = document.createElement('canvas');
+        this.overlay = L.imageOverlay(this.canvas.toDataURL(), [[0,1], [0,1]]).addTo(this._map);
+        this.sideScale = document.getElementById("sideScale");
+        this.bottomScale = document.getElementById("bottomScale");
+        this.windbarbs = L.layerGroup([], {pane: 'shadowPane'}).addTo(this._map);
+
         // Renderers
-        this.plottyRenderer = raspRendererPlotty(this._map, this.canvas);
+        this.plottyRenderer = raspRendererPlotty(this._map, this.canvas, this.sideScale, this.bottomScale);
         this.windbarbRenderer = raspRendererWindbarbs(this._map, this.windbarbs);
 
         // Value indicator
-        this.valueIndicator = valueIndicator();
+        this.valueIndicator = valueIndicator(this.sideScale, this.bottomScale);
         this.valueIndicator.addTo(this._map);
         this._map.on('mousemove', this._onMouseMove, this);
         return this;
@@ -104,6 +106,7 @@ L.RaspLayer = L.Layer.extend({
         this.overlay.setUrl(this.canvas.toDataURL());
         this.setOpacity(this.opacityLevel);
     },
+
     _updateValueIndicator(lat, lng) {
         if (!lat || !lng) return;
         this._lastLat = lat;
@@ -124,12 +127,12 @@ L.RaspLayer = L.Layer.extend({
                 if (i != 0) {
                     valueText += ", ";
                 } else {
-                    this.plottyRenderer.updateScaleIndicator(value);
+                    this.valueIndicator.updateScaleIndicator(value);
                 }
                 valueText += `${value} ${this.units[i]}`;
             });
         } else {
-            this.plottyRenderer.hideScaleIndicator();
+            this.valueIndicator.hideScaleIndicator();
         }
         this.valueIndicator.updateValue(valueText);
     },
