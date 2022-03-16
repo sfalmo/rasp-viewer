@@ -11,7 +11,8 @@ export default {
     output: {
         file: 'bundle.js',
         format: 'iife',
-        sourcemap: true
+        sourcemap: true,
+        inlineDynamicImports: true
     },
     plugins: [
         resolve({

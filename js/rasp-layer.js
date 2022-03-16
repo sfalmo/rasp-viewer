@@ -51,7 +51,6 @@ L.RaspLayer = L.Layer.extend({
     },
     update: function(georasters, parameter) {
         this.valid = true;
-        this.georasters = georasters;
         if (parameter.composite) {
             this.units = parameter.composite.units;
             this.domains = parameter.composite.domains;
@@ -59,35 +58,47 @@ L.RaspLayer = L.Layer.extend({
             this.units = [parameter.unit];
             this.domains = [parameter.domain];
         }
-        this._render(georasters, parameter);
         this.valueIndicator.updateParameter(parameter.longname);
-        this._updateValueIndicator(this._lastLat, this._lastLng);
+        Promise.all(georasters.map(georaster => georaster.readRasters()))
+            .then(data => {
+                this.data = data;
+                this.data.width = this.data[0].width;
+                this.data.height = this.data[0].height;
+                var [xmin, ymin, xmax, ymax] = georasters[0].getBoundingBox();
+                this.data.xmin = xmin;
+                this.data.ymin = ymin;
+                this.data.xmax = xmax;
+                this.data.ymax = ymax;
+                this.data.noDataValue = georasters[0].getGDALNoData();
+                this._render(parameter);
+                this._updateValueIndicator(this._lastLat, this._lastLng);
+            });
     },
-    _render: function(georasters, parameter) {
+    _render: function(parameter) {
         this.windbarbRenderer.clear();
-        this.overlay.setBounds([L.CRS.EPSG3857.unproject(L.point(georasters[0].xmin, georasters[0].ymin)), L.CRS.EPSG3857.unproject(L.point(georasters[0].xmax, georasters[0].ymax))]);
+        this.overlay.setBounds([L.CRS.EPSG3857.unproject(L.point(this.data.xmin, this.data.ymin)), L.CRS.EPSG3857.unproject(L.point(this.data.xmax, this.data.ymax))]);
         // The base parameter is always displayed as a heatmap (currently realized via the plotty renderer)
         if (!parameter.composite) {
-            this.plottyRenderer.render(georasters[0], {domain: this.domains[0], unit: this.units[0], colorscale: parameter.colorscale});
+            this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], colorscale: parameter.colorscale});
         } else {
             // For composite parameters, the additional fields must also be rendered according to the composite type
             if (parameter.composite.type == "wstar_bsratio") {
-                this.plottyRenderer.render(georasters[0], {domain: this.domains[0], unit: this.units[0]});
-                this.plottyRenderer.render(georasters[1], {domain: this.domains[1], unit: this.units[1], colorscale: 'bsratio', append: true});
+                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0]});
+                this.plottyRenderer.render(this.data, 1, {domain: this.domains[1], unit: this.units[1], colorscale: 'bsratio', append: true});
             }
             if (parameter.composite.type == "wind") {
-                this.plottyRenderer.render(georasters[0], {domain: this.domains[0], unit: this.units[0]});
-                this.windbarbRenderer.render(georasters[0], georasters[1]);
+                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0]});
+                this.windbarbRenderer.render(this.data, 0, 1);
             }
             if (parameter.composite.type == "clouds") {
-                this.plottyRenderer.render(georasters[0], {domain: this.domains[0], unit: this.units[0], colorscale: 'clouds', dummy: true});
-                this.plottyRenderer.render(georasters[0], {domain: this.domains[0], unit: this.units[0], colorscale: 'clouds_low', append: true});
-                this.plottyRenderer.render(georasters[1], {domain: this.domains[1], unit: this.units[1], colorscale: 'clouds_mid', append: true});
-                this.plottyRenderer.render(georasters[2], {domain: this.domains[2], unit: this.units[2], colorscale: 'clouds_high', append: true});
+                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], colorscale: 'clouds', dummy: true});
+                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], colorscale: 'clouds_low', append: true});
+                this.plottyRenderer.render(this.data, 1, {domain: this.domains[1], unit: this.units[1], colorscale: 'clouds_mid', append: true});
+                this.plottyRenderer.render(this.data, 2, {domain: this.domains[2], unit: this.units[2], colorscale: 'clouds_high', append: true});
             }
             if (parameter.composite.type == "press") {
-                this.plottyRenderer.render(georasters[0], {domain: this.domains[0], unit: this.units[0]});
-                this.windbarbRenderer.render(georasters[1], georasters[2]);
+                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0]});
+                this.windbarbRenderer.render(this.data, 1, 2);
             }
         }
         this.overlay.setUrl(this.canvas.toDataURL());
@@ -99,16 +110,16 @@ L.RaspLayer = L.Layer.extend({
         this._lastLng = lng;
         var {x, y} = L.CRS.EPSG3857.project({lat, lng});
         // The (0, 0) index of the georaster data is at the top left corner
-        var ix = Math.floor((x - this.georasters[0].xmin) / (this.georasters[0].xmax - this.georasters[0].xmin) * this.georasters[0].width);
-        var iy = Math.floor((this.georasters[0].ymax - y) / (this.georasters[0].ymax - this.georasters[0].ymin) * this.georasters[0].height);
+        var ix = Math.floor((x - this.data.xmin) / (this.data.xmax - this.data.xmin) * this.data.width);
+        var iy = Math.floor((this.data.ymax - y) / (this.data.ymax - this.data.ymin) * this.data.height);
         var values = [];
-        if (ix >= 0 && ix < this.georasters[0].width && iy >= 0 && iy < this.georasters[0].height) { // we are inside the domain
-            this.georasters.forEach((georaster, i) => {
-                values[i] = georaster.values[0][iy][ix].toFixed(0);
+        if (ix >= 0 && ix < this.data.width && iy >= 0 && iy < this.data.height) { // we are inside the domain
+            this.data.forEach((data, i) => {
+                values[i] = data[0][iy * this.data.width + ix].toFixed(0);
             });
         }
         var valueText = "";
-        if (values.length != 0 && values[0] != this.georasters[0].noDataValue) {
+        if (values.length != 0 && values[0] != this.data.noDataValue) {
             values.forEach((value, i) => {
                 if (i != 0) {
                     valueText += ", ";
@@ -123,7 +134,7 @@ L.RaspLayer = L.Layer.extend({
         this.valueIndicator.updateValue(valueText);
     },
     _onMouseMove: function(e) {
-        if (this.valid && this.georasters) {
+        if (this.valid && this.data) {
             this._updateValueIndicator(e.latlng.lat, e.latlng.lng);
         }
     }

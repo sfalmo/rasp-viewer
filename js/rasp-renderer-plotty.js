@@ -53,9 +53,11 @@ L.RaspRendererPlotty = L.Class.extend({
             useWebGL: true
         });
     },
-    render: function(georaster, options) {
-        this._updateDataset(georaster, options.dummy ? options.dummy : false);
-        this.plottyplot.setDomain(options.domain);
+    render: function(data, layer, options) {
+        this._updateDataset(data, layer, options.dummy ? options.dummy : false);
+        if (options.domain) {
+            this.plottyplot.setDomain(options.domain);
+        }
         this.plottyplot.setColorScale(options.colorscale ? options.colorscale : 'rasp'); // Default to rasp
         this.plottyplot.render();
         if (!options.append) {
@@ -65,23 +67,15 @@ L.RaspRendererPlotty = L.Class.extend({
         }
         this.targetCanvas.getContext('2d').drawImage(this.workingCanvas, 0, 0);
     },
-    _updateDataset: function(georaster, dummy) {
-        this.data = new Float32Array(georaster.width * georaster.height);
+    _updateDataset: function(data, layer, dummy) {
+        this.plottyplot.setNoDataValue(data.noDataValue);
         if (dummy) {
-            for (let i = 0; i < georaster.height; i++) {
-                for (let j = 0; j < georaster.width; j++) {
-                    this.data[i * georaster.width + j] = georaster.noDataValue;
-                }
-            }
+            var dummyData = new Float32Array(data.width * data.height);
+            dummyData.fill(data.noDataValue);
+            this.plottyplot.setData(dummyData, data.width, data.height);
         } else {
-            for (let i = 0; i < georaster.height; i++) {
-                for (let j = 0; j < georaster.width; j++) {
-                    this.data[i * georaster.width + j] = georaster.values[0][i][j];
-                }
-            }
+            this.plottyplot.setData(data[layer][0], data.width, data.height);
         }
-        this.plottyplot.setNoDataValue(georaster.noDataValue);
-        this.plottyplot.setData(this.data, georaster.width, georaster.height);
     },
     _updateScale: function(domain, unit) {
         this._updateColorscale(domain, unit);

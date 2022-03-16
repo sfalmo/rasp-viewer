@@ -1,4 +1,5 @@
-import parseGeoraster from 'georaster';
+import * as GeoTIFF from 'geotiff';
+import * as plotty from 'plotty';
 
 import { cModels , cCategories , cParameters , cSoundings , cMeteograms , cLayers , cDefaults } from '../config.js';
 import validIndicator from './valid-indicator.js';
@@ -83,7 +84,7 @@ L.Control.RASPControl = L.Control.extend({
             catRadio.type = "radio";
             catRadio.value = category;
             catLabel.style.cursor = "pointer";
-            catLabel.innerHTML += `<svg viewBox="0 0 36 36" class="parameterCategoryIcon"><use xlink:href="img/sprites.svg#${category}"></use></svg>`;
+            catLabel.innerHTML += `<svg viewBox="0 0 12 12" class="parameterCategoryIcon"><use xlink:href="img/sprites.svg#${category}"></use></svg>`;
             catLabel.title = dict["parameterCategory_" + category + "_title"];
             catRadio.id = catLabel.title;
             catLabel.htmlFor = catRadio.id;
@@ -133,6 +134,11 @@ L.Control.RASPControl = L.Control.extend({
         var meteogramText = L.DomUtil.create('span', '', meteogramLabel);
         meteogramText.innerHTML = dict["Meteograms"];
 
+        this.crosssectionControl = L.DomUtil.create('button', 'btn btn-primary', this._raspPanel);
+        this.crosssectionControl.title = "Crosssection";
+        this.crosssectionControl.innerHTML = "Crosssection";
+        this.crosssectionControl.onclick = () => { this.showCrosssection(); };
+
         this._collapseLink = L.DomUtil.create('a', 'leaflet-control-collapse-button', this._raspPanel);
         this._collapseLink.innerHTML = '⇱';
         this._collapseLink.title = 'Panel minimieren';
@@ -143,24 +149,26 @@ L.Control.RASPControl = L.Control.extend({
         window.onresize = () => { this.togglePanelOrOffcanvas(); };
     },
     toOffcanvas: function() {
-        this.collapse();
-        this.isOffcanvas = true;
         L.DomEvent.off(this._link, 'mouseenter', this.expand, this);
-        document.getElementById("offcanvas-content").appendChild(this._raspPanel);
-        this._collapseLink.style.display = "none";
         this._link.href = "#offcanvas";
         this._link.setAttribute("data-bs-toggle", "offcanvas");
+        this.collapse();
+        this.isOffcanvas = true;
+        document.getElementById("offcanvas-content").appendChild(this._raspPanel);
+        this._collapseLink.style.display = "none";
     },
     toPanel: function() {
-        L.DomEvent.on(this._link, 'mouseenter', this.expand, this);
         this._container.appendChild(document.getElementById("offcanvas-content").children[0]);
         this._collapseLink.style.display = "block";
-        this._link.href = "#";
-        this._link.removeAttribute("data-bs-toggle");
         var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById("offcanvas"));
-        offcanvas.hide();
+        if (offcanvas) {
+            offcanvas.hide();
+        }
         this.isOffcanvas = false;
         this.expand();
+        this._link.removeAttribute("data-bs-toggle");
+        this._link.href = "#";
+        L.DomEvent.on(this._link, 'mouseenter', this.expand, this);
     },
     togglePanelOrOffcanvas: function() {
         if (window.innerWidth < 768 && !this.isOffcanvas) {
@@ -301,10 +309,13 @@ L.Control.RASPControl = L.Control.extend({
                 }
             })
             .then(buffers => {
-                return Promise.all(buffers.map(parseGeoraster));
+                return Promise.all(buffers.map(GeoTIFF.fromArrayBuffer));
             })
-            .then(georasters => {
-                this.raspLayer.update(georasters, parameter);
+            .then(geotiffs => {
+                return Promise.all(geotiffs.map(geotiff => geotiff.getImage()));
+            })
+            .then(images => {
+                this.raspLayer.update(images, parameter);
             })
             .catch(err => {
                 this.raspLayer.invalidate();
@@ -410,6 +421,39 @@ L.Control.RASPControl = L.Control.extend({
             );
         }
         return L.layerGroup(markers);
+    },
+    showCrosssection: function() {
+        fetch("crosssection?lat_start=49&lon_start=11&lat_end=51&lon_end=13")
+            .then(response => response.arrayBuffer())
+            .then(buffer => {
+                var array = new Int32Array(buffer);
+                var dims = array.subarray(0, 2);
+                var height = dims[0];
+                var width = dims[1];
+                var levels = array.subarray(2, height + 2);
+                var crosssectionData = array.subarray(height + 2);
+
+                var workingCanvas = document.createElement("canvas");
+                var plot = new plotty.plot({
+                    canvas: workingCanvas,
+                    data: crosssectionData,
+                    width: width,
+                    height: height,
+                    domain: [-100, 100],
+                    colorScale: 'viridis',
+                    useWebGL: true
+                });
+                plot.render();
+                this.currentPlot = {type: "crosssection"};
+                this.currentPlot.image = new Image();
+                this.currentPlot.image.setAttribute("class", "imagePlot");
+                this.currentPlot.image.src = workingCanvas.toDataURL();
+                this._updatePlot();
+            })
+            .finally(() => {
+                this._hideLoadingAnimationMaybe();
+            });
+        this._armLoadingAnimation();
     }
 });
 

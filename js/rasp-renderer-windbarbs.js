@@ -8,9 +8,12 @@ L.RaspRendererWindbarbs = L.Class.extend({
         this._map.off('zoomend');
         this._map.off('dragend');
     },
-    render: function(georasterSpeed, georasterAngle) {
-        this.georasterSpeed = georasterSpeed;
-        this.georasterAngle = georasterAngle;
+    render: function(data, layerSpeed, layerAngle) {
+        this.data = data;
+        this.layerSpeed = layerSpeed;
+        this.layerAngle = layerAngle;
+        this.pixelWidth = (this.data.xmax - this.data.xmin) / this.data.width;
+        this.pixelHeight = (this.data.ymax - this.data.ymin) / this.data.height;
         this._doRender();
         this._map.on('zoomend', this._doRender, this);
         this._map.on('dragend', this._doRender, this);
@@ -18,21 +21,17 @@ L.RaspRendererWindbarbs = L.Class.extend({
     _doRender: function() {
         this.layerGroup.clearLayers();
         this.barbs = [];
-        var stride = Math.ceil(100 * 2**(7 - this._map.getZoom()));
+        var stride = Math.ceil(100 * 2**(5.5 + window.innerWidth / 2000 - this._map.getZoom()));
         var bounds = this._map.getBounds();
-        var xmin = this.georasterSpeed.xmin;
-        var ymax = this.georasterSpeed.ymax;
-        var pixelWidth = this.georasterSpeed.pixelWidth;
-        var pixelHeight = this.georasterSpeed.pixelHeight;
-        for (let i = Math.floor(stride / 2); i < this.georasterSpeed.height - Math.floor(stride / 2); i += stride) {
-            for (let j = Math.floor(stride / 2); j < this.georasterSpeed.width - Math.floor(stride / 2); j += stride) {
-                var position = this._getPosition(xmin, ymax, pixelWidth, pixelHeight, i, j);
+        for (let i = Math.floor(stride / 2); i < this.data.height - Math.floor(stride / 2); i += stride) {
+            for (let j = Math.floor(stride / 2); j < this.data.width - Math.floor(stride / 2); j += stride) {
+                var position = this._getPosition(i, j);
                 if (!bounds.contains(position)) {
                     continue;
                 }
-                var speed = this.georasterSpeed.values[0][i][j];
-                var angle = this.georasterAngle.values[0][i][j];
-                if (speed != this.georasterSpeed.noDataValue && angle != this.georasterAngle.noDataValue) {
+                var speed = this.data[this.layerSpeed][0][i * this.data.width + j];
+                var angle = this.data[this.layerAngle][0][i * this.data.width + j];
+                if (speed != this.data.noDataValue && angle != this.data.noDataValue) {
                     var svg = this._getBarb(speed * 1.94384, angle, 80);
                     var divIcon = L.divIcon({
                         className: "leaflet-data-marker",
@@ -55,9 +54,9 @@ L.RaspRendererWindbarbs = L.Class.extend({
             }
         });
     },
-    _getPosition(xmin, ymax, pixelWidth, pixelHeight, i, j) {
-        var x = xmin + (j + 0.5) * pixelWidth;
-        var y = ymax - (i + 0.5) * pixelHeight;
+    _getPosition(i, j) {
+        var x = this.data.xmin + (j + 0.5) * this.pixelWidth;
+        var y = this.data.ymax - (i + 0.5) * this.pixelHeight;
         return L.CRS.EPSG3857.unproject(L.point(x, y));
     },
     _getFlagSvgPath: function(speed) {
