@@ -30,7 +30,7 @@ L.RaspLayer = L.Layer.extend({
         return this;
     },
     onRemove: function() {
-        this._map.off('mousemove', this._onMouseMove);
+        this._map.off('mousemove', this._onMouseMove, this);
     },
     opacityUp: function() {
         this.opacityLevel = Math.min(this.opacityLevel + this.opacityDelta, 1);

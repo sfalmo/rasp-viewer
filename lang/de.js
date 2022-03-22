@@ -23,6 +23,7 @@ var dict = {
     "meteogramCheckbox_label": "Orte mit Meteogrammen auf Karte anzeigen",
     "crosssection": "Vertikalquerschnitt",
     "crosssectionHelp": "Auf der Karte zwei mal klicken, um Start- und Endpunkt des Vertikalquerschnittes auszuwählen. Zum Deaktivieren des Querschnitts-Tools die obige Schaltfläche nochmals drücken.",
+    "crosssectionError": "Konnte Vertikalquerschnitt nicht erstellen. Sind Start- und Endpunkt innerhalb des Vorhersagebereiches?",
     "Topography": "Topografie",
     "Grayscale": "Graustufen",
     "Airspace": "Lufträume",

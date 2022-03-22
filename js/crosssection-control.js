@@ -1,17 +1,7 @@
 import { cColorscales } from '../config.js';
+import { unflatten } from './utils.js';
 import * as plotty from 'plotty';
 import Plotly from 'plotly.js/dist/plotly-cartesian';
-
-function unflatten(valuesInOneDimension, size) {
-    const {height, width} = size;
-    const valuesInTwoDimensions = [];
-    for (let y = 0; y < height; y++) {
-        const start = y * width;
-        const end = start + width;
-        valuesInTwoDimensions.push(valuesInOneDimension.slice(start, end));
-    }
-    return valuesInTwoDimensions;
-}
 
 L.CrosssectionControl = L.Class.extend({
     initialize: function(raspControl, options) {
@@ -24,6 +14,7 @@ L.CrosssectionControl = L.Class.extend({
         this.crosssectionButton.innerHTML = dict["crosssection"];
         this.crosssectionHelp = L.DomUtil.create('div', '', crosssectionDiv);
         this.crosssectionButton.onclick = () => { this.toggleSelector(); };
+        this.crosssectionStatus = L.DomUtil.create('div', 'text-danger', crosssectionDiv);
 
         this.points = [];
     },
@@ -77,8 +68,15 @@ L.CrosssectionControl = L.Class.extend({
             this.line.remove();
         }
         this.line = L.polyline([[lat_start, lon_start], [lat_end, lon_end]]).addTo(this._map);
+        this.crosssectionStatus.innerHTML = "";
         fetch(`crosssection?model=${model}&run_date=${runDate}&day=${day}&time=${time}&lat_start=${lat_start}&lon_start=${lon_start}&lat_end=${lat_end}&lon_end=${lon_end}`)
-            .then(response => response.arrayBuffer())
+            .then(response => {
+                if (response.ok) {
+                    return response.arrayBuffer();
+                } else {
+                    throw Error("crosssectionError");
+                }
+            })
             .then(buffer => {
                 // The incoming data is organized as follows:
                 // [height, width, levels..., terrain..., crosssectionData...]
@@ -116,6 +114,7 @@ L.CrosssectionControl = L.Class.extend({
                         x: distance,
                         y: terrain,
                         fill: 'tozeroy',
+                        fillcolor: '#808080',
                         line: {
                             color: '#808080',
                         },
@@ -125,10 +124,12 @@ L.CrosssectionControl = L.Class.extend({
                 var plotlyLayout = {
                     xaxis: {
                         visible: false,
-                        fixedrange: true
+                        fixedrange: true,
+                        range: [0, width - 1]
                     },
                     yaxis: {
-                        automargin: true
+                        automargin: true,
+                        rangemode: 'nonnegative'
                     },
                     margin: {
                         t: 0,
@@ -139,7 +140,10 @@ L.CrosssectionControl = L.Class.extend({
                 };
                 this._raspControl.currentPlot = {type: "crosssection"};
                 this._raspControl.updatePlot();
-                Plotly.newPlot('test', plotlyData, plotlyLayout, {displayModeBar: false, responsive: true});
+                Plotly.newPlot('plotContent', plotlyData, plotlyLayout, {displayModeBar: false, responsive: true});
+            })
+            .catch(err => {
+                this.crosssectionStatus.innerHTML = dict[err.message] ? dict[err.message] : err.message;
             })
             .finally(() => {
                 this._raspControl.loadingPlot = false;

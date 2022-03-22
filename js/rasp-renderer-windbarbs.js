@@ -5,8 +5,9 @@ L.RaspRendererWindbarbs = L.Class.extend({
     },
     clear: function() {
         this.layerGroup.clearLayers();
-        this._map.off('zoomend');
-        this._map.off('dragend');
+        this._map.off('zoomend', this._doRender, this);
+        this._map.off('dragend', this._doRender, this);
+        this._map.off('resize', this._doRender, this);
     },
     render: function(data, layerSpeed, layerAngle) {
         this.data = data;
@@ -17,6 +18,7 @@ L.RaspRendererWindbarbs = L.Class.extend({
         this._doRender();
         this._map.on('zoomend', this._doRender, this);
         this._map.on('dragend', this._doRender, this);
+        this._map.on('resize', this._doRender, this);
     },
     _doRender: function() {
         this.layerGroup.clearLayers();

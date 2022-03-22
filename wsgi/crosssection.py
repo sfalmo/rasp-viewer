@@ -52,7 +52,15 @@ def application(environ, start_response):
     hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else None
     dh = float(q["dh"]) if "dh" in q and q["dh"] else None
     wrf_filename = environ["DOCUMENT_ROOT"] + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
-    levels, terrain, cross = crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax, dh)
+
+    try:
+        levels, terrain, cross = crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax, dh)
+    except ValueError:
+        status = "400 Bad Request"
+        response_headers = [("Content-type", "text/plain")]
+        start_response(status, response_headers)
+        return [b"Could not create cross section."]
+
     result = np.concatenate((np.array(cross.shape), levels, terrain, cross.flatten()), dtype=np.int32)
 
     status = "200 OK"
@@ -63,7 +71,7 @@ def application(environ, start_response):
 
 # For testing
 if __name__ == "__main__":
-    levels, terrain, cross = crosssection("../../results/OUT/TIR/2022-03-22/0/wrfout_d02_2022-03-22_13:00:00", 50.3620, 13.0446, 50.7082, 12.74439)
+    levels, terrain, cross = crosssection("../../results/OUT/TIR/2022-03-22/0/wrfout_d02_2022-03-22_13:00:00", 50.3620, 13.0446, 50.7082, 15.74439)
     fig, ax = plt.subplots()
     ax.plot(terrain)
     ax.pcolormesh(np.arange(0, cross.shape[1]), levels, cross)

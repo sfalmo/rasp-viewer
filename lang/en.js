@@ -23,6 +23,7 @@ var dict = {
     "meteogramCheckbox_label": "Show meteogram locations on map",
     "crosssection": "Cross Section",
     "crosssectionHelp": "Click twice on the map to select the start and end point of the cross section. Press the above button again to deactivate the cross section tool.",
+    "crosssectionError": "Could not create cross section. Make sure that start and end point are inside the forecast domain.",
     "Topography": "Topography",
     "Grayscale": "Grayscale",
     "Airspace": "Airspace",
