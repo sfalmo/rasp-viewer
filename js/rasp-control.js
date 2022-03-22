@@ -5,6 +5,7 @@ import { cModels , cCategories , cParameters , cSoundings , cMeteograms , cLayer
 import validIndicator from './valid-indicator.js';
 import datetimeSelector from './datetime-selector.js';
 import crosssectionControl from './crosssection-control.js';
+import soundingControl from './sounding-control.js';
 import raspLayer from './rasp-layer.js';
 
 L.Control.RASPControl = L.Control.extend({
@@ -67,6 +68,7 @@ L.Control.RASPControl = L.Control.extend({
             L.DomEvent.on(this._link, 'focus', this.expand, this);
         }
         this.expand();
+        L.DomEvent.on(this._container, 'mousemove', L.DomEvent.stop);
         L.DomEvent.disableClickPropagation(this._container);
         L.DomEvent.disableScrollPropagation(this._container);
         this._raspPanel = L.DomUtil.create('div', "leaflet-control-layers-list", this._container);
@@ -102,6 +104,7 @@ L.Control.RASPControl = L.Control.extend({
         this.parameterDescription = L.DomUtil.create('span', 'parameterDescription', parameterDetails);
 
         this.crosssectionControl = crosssectionControl(this);
+        this.soundingControl = soundingControl(this);
 
         var miscControls = L.DomUtil.create('div', 'row align-items-center', this._raspPanel);
         var opacityDiv = L.DomUtil.create('div', 'col-auto btn-group', miscControls);

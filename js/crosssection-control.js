@@ -1,6 +1,5 @@
 import { cColorscales } from '../config.js';
 import { unflatten } from './utils.js';
-import * as plotty from 'plotty';
 import Plotly from 'plotly.js/dist/plotly-cartesian';
 
 L.CrosssectionControl = L.Class.extend({
@@ -18,17 +17,12 @@ L.CrosssectionControl = L.Class.extend({
 
         this.points = [];
     },
-    show: function() {
-        this.crosssectionButton.style.display = "block";
-    },
-    hide: function() {
-        this.crosssectionButton.style.display = "none";
-    },
     toggleSelector: function() {
         if (this.isArmed) {
             this.isArmed = false;
             this.crosssectionButton.classList.remove("active");
             this.crosssectionHelp.innerHTML = "";
+            this.crosssectionStatus.innerHTML = "";
             this._map._container.style.cursor = "";
             this._map.off('click', this._addPoint, this);
             this._removePoints();
