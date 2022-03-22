@@ -1,8 +1,9 @@
 import resolve from '@rollup/plugin-node-resolve';
 import { babel } from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
-import analyze from 'rollup-plugin-analyzer';
+// import analyze from 'rollup-plugin-analyzer';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -15,16 +16,16 @@ export default {
         inlineDynamicImports: true
     },
     plugins: [
+        json(),
         resolve({
-            jsnext: true,
-            module: true,
             browser: true
         }),
         commonjs(),
         babel({
-            babelHelpers: 'bundled'
+            babelHelpers: 'bundled',
+            exclude: 'node_modules/**'
         }),
         production && terser(),
-        analyze()
+        // analyze()
 	  ]
 };

@@ -40,12 +40,10 @@ L.Control.DatetimeSelector = L.Control.extend({
 
         return this._container;
     },
-    onRemove: function (map) {
-        // Nothing to do
-    },
     get: function() {
-        var [model, runDate, day] = this.modelDaySelect.value.split("/");
-        return {model: model, runDate: runDate, day: day, time: this.timeSelect.value, dir: this.modelDaySelect.value};
+        var {modelKey, runDate, validDate, day} = JSON.parse(this.modelDaySelect.value);
+        var dir = modelKey + "/" + runDate + "/" + day;
+        return {model: modelKey, runDate: runDate, validDate: validDate, day: day, dir: dir, time: this.timeSelect.value};
     },
     findLatestRun: function(modelDay) {
         var {modelKey, day} = modelDay;
@@ -88,10 +86,10 @@ L.Control.DatetimeSelector = L.Control.extend({
                     if (!r) {
                         continue;
                     }
-                    var {modelKey, validDate, runDate, day} = r;
+                    var {modelKey, runDate, validDate, day} = r;
                     var description = validDate.toLocaleDateString();
-                    var dir = modelKey + "/" + runDate.toLocaleDateString('en-CA') + "/" + day;
-                    this.modelDaySelect.add(new Option(description, dir));
+                    var selectValue = {modelKey: modelKey, runDate: runDate.toLocaleDateString('en-CA'), validDate: validDate.toLocaleDateString('en-CA'), day: day};
+                    this.modelDaySelect.add(new Option(description, JSON.stringify(selectValue)));
                     var today = new Date();
                     if (validDate.toDateString() == today.toDateString()) {
                         this.modelDaySelect[this.modelDaySelect.length - 1].selected = "selected";

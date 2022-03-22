@@ -1,27 +1,23 @@
 import * as plotty from 'plotty';
+import { isLandscape } from './utils';
 
 L.RaspRendererPlotty = L.Class.extend({
-    initialize: function(map, canvas, sideScale, bottomScale, options) {
+    initialize: function(map, canvas, scale, options) {
         this._map = map;
         this.targetCanvas = canvas;
         this.workingCanvas = document.createElement("canvas");
 
         // Color scales
-        this.sideScaleUnit = sideScale.getElementsByClassName("scaleUnit")[0];
-        this.sideScaleMax = sideScale.getElementsByClassName("scaleMax")[0];
-        this.sideScaleCanvasContainer = sideScale.getElementsByClassName("scaleColorbar")[0];
-        this.sideScaleMin = sideScale.getElementsByClassName("scaleMin")[0];
-        this.sideScaleCanvas = this.sideScaleCanvasContainer.getElementsByTagName("canvas")[0];
-        this.sideScaleCanvas.height = 256;
-        this.sideScaleCanvas.width = 1;
-
-        this.bottomScaleMin = bottomScale.getElementsByClassName("scaleMin")[0];
-        this.bottomScaleCanvasContainer = bottomScale.getElementsByClassName("scaleColorbar")[0];
-        this.bottomScaleMax = bottomScale.getElementsByClassName("scaleMax")[0];
-        this.bottomScaleUnit = bottomScale.getElementsByClassName("scaleUnit")[0];
-        this.bottomScaleCanvas = this.bottomScaleCanvasContainer.getElementsByTagName("canvas")[0];
-        this.bottomScaleCanvas.height = 1;
-        this.bottomScaleCanvas.width = 256;
+        this.scaleUnit = scale.getElementsByClassName("scaleUnit")[0];
+        this.scaleMax = scale.getElementsByClassName("scaleMax")[0];
+        this.scaleCanvasContainer = scale.getElementsByClassName("scaleColorbar")[0];
+        this.scaleMin = scale.getElementsByClassName("scaleMin")[0];
+        this.scaleCanvas = this.scaleCanvasContainer.getElementsByTagName("canvas")[0];
+        this._setScaleOrientation();
+        window.addEventListener('resize', () => {
+            this._setScaleOrientation();
+            this._renderScale();
+        });
 
         plotty.addColorScale("rasp", ["#004dff", "#01f8e9", "#34c00c", "#f8fd00", "#ff9b00", "#ff1400"], [0, 0.2, 0.4, 0.6, 0.8, 1]);
         plotty.addColorScale("bsratio", ["#00000040", "#00000020", "#00000020", "#00000000"], [0.2999999, 0.3, 0.6999999, 0.7]);
@@ -40,6 +36,15 @@ L.RaspRendererPlotty = L.Class.extend({
             colorScale: 'rasp',
             useWebGL: true
         });
+    },
+    _setScaleOrientation: function() {
+        if (isLandscape()) {
+            this.scaleCanvas.height = 256;
+            this.scaleCanvas.width = 1;
+        } else {
+            this.scaleCanvas.height = 1;
+            this.scaleCanvas.width = 256;
+        }
     },
     render: function(data, layer, options) {
         this._updateDataset(data, layer, options.dummy ? options.dummy : false);
@@ -66,34 +71,33 @@ L.RaspRendererPlotty = L.Class.extend({
         }
     },
     _updateScale: function(domain, unit) {
-        this._updateColorscale(domain, unit);
+        this._renderScale(domain, unit);
         this._updateScaleAnnotation(domain[0], domain[1], unit);
     },
-    _updateColorscale: function(domain, unit) {
+    _renderScale: function(domain, unit) {
         let colorScaleCanvas = this.plottyplot.colorScaleCanvas;
         let colorScaleCtx = colorScaleCanvas.getContext('2d');
         let colorScaleData = colorScaleCtx.getImageData(0, 0, colorScaleCanvas.width, colorScaleCanvas.height);
-        let bottomScaleCtx = this.bottomScaleCanvas.getContext('2d');
-        bottomScaleCtx.putImageData(colorScaleData, 0, 0);
-        // The color scale data has to be flipped for rendering it vertically in the side scale
-        let sideScaleCtx = this.sideScaleCanvas.getContext('2d');
-        let sideScaleData = sideScaleCtx.createImageData(colorScaleCanvas.height, colorScaleCanvas.width);
-        for (let i = 0; i < colorScaleData.data.length; i+=4) {
-            let r = colorScaleData.data.length - 4 - i;
-            sideScaleData.data[i] = colorScaleData.data[r];
-            sideScaleData.data[i+1] = colorScaleData.data[r+1];
-            sideScaleData.data[i+2] = colorScaleData.data[r+2];
-            sideScaleData.data[i+3] = colorScaleData.data[r+3];
+        let scaleCtx = this.scaleCanvas.getContext('2d');
+        if (isLandscape()) {
+            // The color scale data has to be flipped for rendering it vertically in the side scale
+            let scaleData = scaleCtx.createImageData(colorScaleCanvas.height, colorScaleCanvas.width);
+            for (let i = 0; i < colorScaleData.data.length; i+=4) {
+                let r = colorScaleData.data.length - 4 - i;
+                scaleData.data[i] = colorScaleData.data[r];
+                scaleData.data[i+1] = colorScaleData.data[r+1];
+                scaleData.data[i+2] = colorScaleData.data[r+2];
+                scaleData.data[i+3] = colorScaleData.data[r+3];
+            }
+            scaleCtx.putImageData(scaleData, 0, 0);
+        } else {
+            scaleCtx.putImageData(colorScaleData, 0, 0);
         }
-        sideScaleCtx.putImageData(sideScaleData, 0, 0);
     },
     _updateScaleAnnotation: function(min, max, scaleUnit) {
-        this.sideScaleUnit.innerHTML = scaleUnit;
-        this.sideScaleMax.innerHTML = max;
-        this.sideScaleMin.innerHTML = min;
-        this.bottomScaleUnit.innerHTML = scaleUnit;
-        this.bottomScaleMax.innerHTML = max;
-        this.bottomScaleMin.innerHTML = min;
+        this.scaleUnit.innerHTML = scaleUnit;
+        this.scaleMax.innerHTML = max;
+        this.scaleMin.innerHTML = min;
     },
     // quantize: function(value) {
     //     this.plottyplot.setExpression(`floor(dataset / ${value} + 0.5) * ${value}`);
@@ -103,6 +107,6 @@ L.RaspRendererPlotty = L.Class.extend({
     // }
 });
 
-export default function(map, canvas, sideScale, bottomScale, options) {
-    return new L.RaspRendererPlotty(map, canvas, sideScale, bottomScale, options);
+export default function(map, canvas, scale, options) {
+    return new L.RaspRendererPlotty(map, canvas, scale, options);
 };

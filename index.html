@@ -24,53 +24,31 @@
         <div id="status">
             <div id="loadingAnimation"></div>
         </div>
-        <div id='mapAndScale'>
-            <div id="offcanvas" class="offcanvas offcanvas-start" tabindex="-1">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title"></h5>
-                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
-                </div>
-                <div id="offcanvas-content" class="offcanvas-body"></div>
+        <div id="offcanvas" class="offcanvas offcanvas-start" tabindex="-1">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title"></h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
             </div>
-            <div id='map'></div>
-            <div id="sideScale">
+            <div id="offcanvasContent" class="offcanvas-body"></div>
+        </div>
+        <div id="content">
+            <div id="map"></div>
+            <div id="scale">
                 <div class="scaleUnit"></div>
                 <div class="scaleMax"></div>
                 <div class="scaleColorbar">
                     <canvas></canvas>
-                    <div class="scaleIndicator">
-                        <div class="scaleIndicatorValue"></div>
-                    </div>
+                    <div class="scaleIndicator"><span class="scaleIndicatorValue"></span></div>
                 </div>
                 <div class="scaleMin"></div>
             </div>
-            <div id="sidePlotWrapper">
-                <div id="sidePlot" class="plot" style="display: none;">
+            <div id="plotWrapper">
+                <div id="plot" style="display: none;">
                     <div class="plotHeader">
                         <button type="button" class="btn-close float-end" data-toggle="plotClose"></button>
                     </div>
-                    <div class="plotContent"></div>
+                    <div id="test" class="plotContent"></div>
                 </div>
-            </div>
-        </div>
-        <div id="bottomScale">
-            <div class="scaleMin"></div>
-            <div class="scaleColorbar">
-                <canvas></canvas>
-                <div class="scaleIndicator">
-                    <div class="scaleIndicatorValue"></div>
-                </div>
-            </div>
-            <div class="scaleMax"></div>
-            <div class="scaleUnit"></div>
-        </div>
-        <div id="bottomPlotWrapper">
-            <div id="bottomPlot" class="plot" style="display: none;">
-                <div class="plotHeader">
-                    <h5></h5>
-                    <button type="button" class="btn-close float-end" data-toggle="plotClose"></button>
-                </div>
-                <div class="plotContent"></div>
             </div>
         </div>
         <script>

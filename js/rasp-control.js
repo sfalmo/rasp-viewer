@@ -4,13 +4,13 @@ import * as plotty from 'plotty';
 import { cModels , cCategories , cParameters , cSoundings , cMeteograms , cLayers , cDefaults } from '../config.js';
 import validIndicator from './valid-indicator.js';
 import datetimeSelector from './datetime-selector.js';
+import crosssectionControl from './crosssection-control.js';
 import raspLayer from './rasp-layer.js';
 
 L.Control.RASPControl = L.Control.extend({
     loadingAnimation: document.getElementById("loadingAnimation"),
-    sidePlot: document.getElementById("sidePlot"),
-    bottomPlot: document.getElementById("bottomPlot"),
-    _offcanvas: document.getElementById("offcanvas"),
+    offcanvasContent: document.getElementById("offcanvasContent"),
+    plot: document.getElementById("plot"),
     meteogramIcon: L.icon({
         iconUrl: cDefaults.meteogramMarker,
         iconSize: [cDefaults.markerSize, cDefaults.markerSize]
@@ -29,23 +29,17 @@ L.Control.RASPControl = L.Control.extend({
 
         this.plotCanvas = document.createElement('canvas');
 
-        this.sidePlot.onclick = e => {
+        this.plot.onclick = e => {
             var button = e.target.closest('button');
             if (button && button.dataset.toggle == 'plotClose') {
-                this._closePlot();
+                this.closePlot();
             }
         };
-        this.bottomPlot.onclick = e => {
-            var button = e.target.closest('button');
-            if (button && button.dataset.toggle == 'plotClose') {
-                this._closePlot();
-            }
-        };
-        this.sidePlotContent = this.sidePlot.getElementsByClassName("plotContent")[0];
-        this.bottomPlotContent = this.bottomPlot.getElementsByClassName("plotContent")[0];
+        this.plotContent = this.plot.getElementsByClassName("plotContent")[0];
 
         this.loadingMeta = false;
         this.loadingBlipmap = false;
+        this.loadingPlot = false;
 
         this.datetimeSelector = datetimeSelector(this).addTo(map);
         this.datetimeSelector.init()
@@ -107,10 +101,7 @@ L.Control.RASPControl = L.Control.extend({
         parameterSummary.innerHTML = dict["parameterDetails_summary"];
         this.parameterDescription = L.DomUtil.create('span', 'parameterDescription', parameterDetails);
 
-        this.crosssectionControl = L.DomUtil.create('button', 'btn btn-primary mb-1', this._raspPanel);
-        this.crosssectionControl.title = "Crosssection";
-        this.crosssectionControl.innerHTML = "Crosssection";
-        this.crosssectionControl.onclick = () => { this.showCrosssection(); };
+        this.crosssectionControl = crosssectionControl(this);
 
         var miscControls = L.DomUtil.create('div', 'row align-items-center', this._raspPanel);
         var opacityDiv = L.DomUtil.create('div', 'col-auto btn-group', miscControls);
@@ -150,7 +141,7 @@ L.Control.RASPControl = L.Control.extend({
         L.DomEvent.on(this._collapseLink, 'click', this.collapse, this);
 
         this.togglePanelOrOffcanvas();
-        window.onresize = () => { this.togglePanelOrOffcanvas(); };
+        window.addEventListener('resize', () => { this.togglePanelOrOffcanvas(); });
     },
     toOffcanvas: function() {
         L.DomEvent.off(this._link, 'mouseenter', this.expand, this);
@@ -158,11 +149,11 @@ L.Control.RASPControl = L.Control.extend({
         this._link.setAttribute("data-bs-toggle", "offcanvas");
         this.collapse();
         this.isOffcanvas = true;
-        document.getElementById("offcanvas-content").appendChild(this._raspPanel);
+        this.offcanvasContent.appendChild(this._raspPanel);
         this._collapseLink.style.display = "none";
     },
     toPanel: function() {
-        this._container.appendChild(document.getElementById("offcanvas-content").children[0]);
+        this._container.appendChild(this.offcanvasContent.children[0]);
         this._collapseLink.style.display = "block";
         var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById("offcanvas"));
         if (offcanvas) {
@@ -250,7 +241,7 @@ L.Control.RASPControl = L.Control.extend({
         this.update();
     },
     _loading: function() {
-        return this.loadingMeta || this.loadingBlipmap || (this.currentPlot && !this.currentPlot.image.complete);
+        return this.loadingMeta || this.loadingBlipmap || this.loadingPlot;
     },
     _armLoadingAnimation: function() {
         setTimeout(() => {
@@ -275,10 +266,8 @@ L.Control.RASPControl = L.Control.extend({
             this.currentPlot.image.src = this.currentPlot.imageUrl;
         }
         this._updateMeta(urls.metaUrl, parameter.longname, day);
-        this._armLoadingAnimation();
     },
     _updateMeta: function(metaUrl, parameterLongname, day) {
-        this.loadingMeta = true;
         fetch(metaUrl)
             .then(response => {
                 if (response.ok) {
@@ -301,9 +290,10 @@ L.Control.RASPControl = L.Control.extend({
                 this.loadingMeta = false;
                 this._hideLoadingAnimationMaybe();
             });
+        this.loadingMeta = true;
+        this._armLoadingAnimation();
     },
     _updateBlipmap: function(geotiffUrls, parameter) {
-        this.loadingBlipmap = true;
         Promise.all(geotiffUrls.map(url => fetch(url)))
             .then(responses => {
                 if (responses.every(response => response.ok)) {
@@ -328,13 +318,15 @@ L.Control.RASPControl = L.Control.extend({
                 this.loadingBlipmap = false;
                 this._hideLoadingAnimationMaybe();
             });
+        this.loadingBlipmap = true;
+        this._armLoadingAnimation();
     },
     toggleSoundingsOrMeteograms: function() {
         if (this.soundingCheckbox.checked) {
             this.soundingOverlay.addTo(this._map);
         } else {
             if (this.currentPlot && this.currentPlot.type == "sounding") {
-                this._closePlot();
+                this.closePlot();
             }
             this.soundingOverlay.remove();
         }
@@ -342,27 +334,24 @@ L.Control.RASPControl = L.Control.extend({
             this.meteogramOverlay.addTo(this._map);
         } else {
             if (this.currentPlot && this.currentPlot.type == "meteogram") {
-                this._closePlot();
+                this.closePlot();
             }
             this.meteogramOverlay.remove();
         }
     },
-    _closePlot: function() {
-        this.sidePlot.style.display = "none";
-        this.bottomPlot.style.display = "none";
+    closePlot: function() {
+        this.plot.style.display = "none";
         this._map.invalidateSize();
         this.currentPlot = null;
     },
-    _updatePlot: function() {
-        this.sidePlot.style.display = "flex";
-        this.bottomPlot.style.display = "flex";
-        this.sidePlotContent.innerHTML = "";
-        this.bottomPlotContent.innerHTML = "";
+    updatePlot: function() {
+        this.plot.style.display = "";
+        this.plotContent.innerHTML = "";
         if (this.currentPlot.type == "meteogram" || this.currentPlot.type == "sounding") {
             this.currentPlot.image.style.objectFit = "contain";
+            this.plotContent.appendChild(this.currentPlot.image);
         }
-        this.sidePlotContent.appendChild(this.currentPlot.image);
-        this.bottomPlotContent.appendChild(this.currentPlot.image.cloneNode());
+        this.loadingPlot = false;
         this._hideLoadingAnimationMaybe();
     },
     getSoundingMarkers: function(modelKey) {
@@ -379,11 +368,11 @@ L.Control.RASPControl = L.Control.extend({
                         this.currentPlot = {type: "sounding", key: soundingKey};
                         this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/sounding" + soundingKey + ".curr." + time + "lst.d2.png";
                         this.currentPlot.image = new Image();
-                        this.currentPlot.image.setAttribute("class", "imagePlot");
                         this.currentPlot.image.onload = () => {
-                            this._updatePlot();
+                            this.updatePlot();
                         };
                         this.currentPlot.image.src = this.currentPlot.imageUrl;
+                        this.loadingPlot = true;
                         this._armLoadingAnimation();
                     })
             );
@@ -404,49 +393,16 @@ L.Control.RASPControl = L.Control.extend({
                         this.currentPlot = {type: "meteogram", key: meteogramKey};
                         this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + meteogramKey + ".png";
                         this.currentPlot.image = new Image();
-                        this.currentPlot.image.setAttribute("class", "imagePlot");
                         this.currentPlot.image.onload = () => {
-                            this._updatePlot();
+                            this.updatePlot();
                         };
                         this.currentPlot.image.src = this.currentPlot.imageUrl;
+                        this.loadingPlot = true;
                         this._armLoadingAnimation();
                     })
             );
         }
         return L.layerGroup(markers);
-    },
-    showCrosssection: function() {
-        fetch("crosssection?lat_start=49&lon_start=11&lat_end=51&lon_end=13")
-            .then(response => response.arrayBuffer())
-            .then(buffer => {
-                var array = new Int32Array(buffer);
-                var dims = array.subarray(0, 2);
-                var height = dims[0];
-                var width = dims[1];
-                var levels = array.subarray(2, height + 2);
-                var crosssectionData = array.subarray(height + 2);
-
-                var workingCanvas = document.createElement("canvas");
-                var plot = new plotty.plot({
-                    canvas: workingCanvas,
-                    data: crosssectionData,
-                    width: width,
-                    height: height,
-                    domain: [-100, 100],
-                    colorScale: 'viridis',
-                    useWebGL: true
-                });
-                plot.render();
-                this.currentPlot = {type: "crosssection"};
-                this.currentPlot.image = new Image();
-                this.currentPlot.image.setAttribute("class", "imagePlot");
-                this.currentPlot.image.src = workingCanvas.toDataURL();
-                this._updatePlot();
-            })
-            .finally(() => {
-                this._hideLoadingAnimationMaybe();
-            });
-        this._armLoadingAnimation();
     }
 });
 

@@ -16,16 +16,15 @@ L.RaspLayer = L.Layer.extend({
 
         this.canvas = document.createElement('canvas');
         this.overlay = L.imageOverlay(this.canvas.toDataURL(), [[0,1], [0,1]]).addTo(this._map);
-        this.sideScale = document.getElementById("sideScale");
-        this.bottomScale = document.getElementById("bottomScale");
+        this.scale = document.getElementById("scale");
         this.windbarbs = L.layerGroup([], {pane: 'shadowPane'}).addTo(this._map);
 
         // Renderers
-        this.plottyRenderer = raspRendererPlotty(this._map, this.canvas, this.sideScale, this.bottomScale);
+        this.plottyRenderer = raspRendererPlotty(this._map, this.canvas, this.scale);
         this.windbarbRenderer = raspRendererWindbarbs(this._map, this.windbarbs);
 
         // Value indicator
-        this.valueIndicator = valueIndicator(this.sideScale, this.bottomScale);
+        this.valueIndicator = valueIndicator(this.scale);
         this.valueIndicator.addTo(this._map);
         this._map.on('mousemove', this._onMouseMove, this);
         return this;
@@ -106,7 +105,6 @@ L.RaspLayer = L.Layer.extend({
         this.overlay.setUrl(this.canvas.toDataURL());
         this.setOpacity(this.opacityLevel);
     },
-
     _updateValueIndicator(lat, lng) {
         if (!lat || !lng) return;
         this._lastLat = lat;

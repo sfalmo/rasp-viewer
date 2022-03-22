@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import numpy as np
 import matplotlib.pyplot as plt
 import netCDF4 as nc
@@ -6,9 +7,9 @@ import wrf
 
 def crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax=None, dh=None):
     if hmax is None:
-        hmax = 6000
+        hmax = 10000
     if dh is None:
-        dh = 100
+        dh = 200
 
     wrf_file = nc.Dataset(wrf_filename)
     cross_start = wrf.CoordPair(lat=lat_start, lon=lon_start)
@@ -18,7 +19,7 @@ def crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax=None
     levels = np.rint(np.arange(0, hmax, dh)).astype(int)
 
     w = wrf.getvar(wrf_file, "wa")
-    w_cross = wrf.vertcross(w, h, levels=levels, wrfin=wrf_file, start_point=cross_start, end_point=cross_end, meta=False)
+    w_cross = wrf.vertcross(w, h, levels=levels, missing=0, wrfin=wrf_file, start_point=cross_start, end_point=cross_end, meta=False)
     w_cross *= 100
     w_cross = np.rint(w_cross).astype(int)
     return [levels, w_cross]
@@ -32,21 +33,23 @@ def application(environ, start_response):
             q[key] = value
         except ValueError:
             q[item] = None
-    if not ("lat_start" in q and "lon_start" in q and "lat_end" in q and "lon_end" in q and q["lat_start"] and q["lon_start"] and q["lat_end"] and q["lon_end"]):
-        status = "400 Bad Request"
-        response_headers = [("Content-type", "text/plain")]
-        start_response(status, response_headers)
-        return [b"At least one of lat_start, lon_start, lat_end or lon_end is invalid or missing. Cannot compute cross section."]
 
+    model = q["model"]
+    run_date = q["run_date"]
+    day = int(q["day"])
+    valid_date = datetime.strftime(datetime.strptime(run_date, "%Y-%m-%d") + timedelta(days=day), "%Y-%m-%d")
+    time = q["time"]
+    hour = time[:2]
+    minute = time[2:]
     lat_start = float(q["lat_start"])
     lon_start = float(q["lon_start"])
     lat_end = float(q["lat_end"])
     lon_end = float(q["lon_end"])
     hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else None
     dh = float(q["dh"]) if "dh" in q and q["dh"] else None
-    wrf_filename = environ["DOCUMENT_ROOT"] + "/results/OUT/TIR/2022-03-15/0/wrfout_d02_2022-03-07_12:00:00"
+    wrf_filename = environ["DOCUMENT_ROOT"] + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
     levels, cross = crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax, dh)
-    result = np.concatenate((np.array(cross.shape), levels, np.flipud(cross).flatten()), dtype=np.int32)
+    result = np.concatenate((np.array(cross.shape), levels, cross.flatten()), dtype=np.int32)
 
     status = "200 OK"
     response_headers = [("Content-type", "application/octet-stream")]
@@ -56,7 +59,7 @@ def application(environ, start_response):
 
 # For testing
 if __name__ == "__main__":
-    levels, cross = crosssection("../../results/OUT/TIR/2022-03-15/0/wrfout_d02_2022-03-07_12:00:00", 49, 11, 51, 13)
+    levels, cross = crosssection("../../results/OUT/TIR/2022-03-17/0/wrfout_d02_2022-03-17_13:00:00", 50.3620, 13.0446, 50.7082, 12.74439)
     fig, ax = plt.subplots()
     ax.pcolormesh(np.arange(0, cross.shape[1]), levels, cross)
     plt.show()

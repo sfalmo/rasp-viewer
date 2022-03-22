@@ -6,12 +6,12 @@ html, body {
     width: auto;
     overflow: hidden;
 }
+
 body {
     display: flex;
     flex-direction: column;
 }
 
-/* Loading animation */
 #status {
     position: absolute;
     left: 50%;
@@ -33,104 +33,74 @@ body {
     to { transform: rotate(360deg); }
 }
 
-#mapAndScale {
+#offcanvasContent {
+    padding: 5px;
+}
+
+#content {
     flex: 1 1 auto;
     min-height: 0; /* This is important! Lets the scale shrink to remaining height */
     display: flex;
-    flex-direction: row;
 }
+@media (orientation: landscape) {
+    #content {
+        flex-direction: row;
+    }
+}
+@media (orientation: portrait) {
+    #content {
+        flex-direction: column;
+    }
+}
+
 #map {
     flex: 1 1 auto;
     height: 100%;
     width: 100%;
 }
 
+#scale {
+    flex: 0 0 auto;
+    display: flex;
+}
 @media (orientation: landscape) {
-    .plot {
-        width: 40vw;
+    #scale {
+        width: 50px;
         height: 100%;
+        flex-direction: column;
     }
 }
 @media (orientation: portrait) {
-    .plot {
+    #scale {
         width: 100%;
-        height: 50vh;
+        flex-direction: row-reverse;
+        align-items: center;
     }
 }
 
-.plot {
-    display: flex;
-    flex-direction: column;
-    padding: 5px;
-}
-
-.plotContent {
-    flex: 0 1 auto;
-    min-height: 0;
-    height: 100%;
-    width: 100%;
-}
-
-.plot img {
-    object-fit: fill;
-    width: 100%;
-    height: 100%;
-}
-
-#sideScale {
-    flex: 0 0 auto;
-    width: 50px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-#bottomScale {
-    flex: 0 0 auto;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-}
-
-#bottomPlot {
+#scale .scaleUnit, #scale .scaleMax, #scale .scaleMin {
     text-align: center;
 }
-
 @media (orientation: landscape) {
-    #bottomScale, #bottomPlotWrapper {
-        display: none;
+    #scale .scaleUnit, #scale .scaleMax, #scale .scaleMin {
+        padding: 2px 0;
     }
 }
 @media (orientation: portrait) {
-    #sideScale, #sidePlotWrapper {
-        display: none;
+    #scale .scaleUnit, #scale .scaleMax, #scale .scaleMin {
+        padding: 0 2px;
     }
-}
-
-#sideScale .scaleUnit, #sideScale .scaleMax, #sideScale .scaleMin {
-    text-align: center;
-    padding: 0 2px;
-}
-
-#bottomScale .scaleUnit, #bottomScale .scaleMax, #bottomScale .scaleMin {
-    padding: 0 5px;
 }
 
 .scaleUnit {
     font-weight: bold;
 }
 
-#sideScale .scaleColorbar {
+#scale .scaleColorbar {
     flex: 1 1 auto;
     position: relative;
     min-height: 0; /* I hate CSS */
     height: 100%;
-}
-
-#bottomScale .scaleColorbar {
-    flex: 1 1 auto;
-    position: relative;
-    width: 100%;
 }
 
 .scaleColorbar canvas {
@@ -138,37 +108,57 @@ body {
     height: 100%;
 }
 
-#sideScale .scaleIndicator {
+#scale .scaleIndicator {
     position: absolute;
-    right: 0;
+    padding: 0 2px;
     bottom: 0;
-    width: 100%;
-}
-
-#sideScale .scaleIndicatorValue {
-    position: absolute;
+    background-color: rgba(255,255,255,0.5);
     text-align: center;
+}
+@media (orientation: landscape) {
+    #scale .scaleIndicator {
+        width: 100%;
+        border-bottom: 2px solid black;
+    }
+}
+@media (orientation: portrait) {
+    #scale .scaleIndicator {
+        height: 100%;
+        border-left: 2px solid black;
+        display: flex;
+        align-items: center;
+    }
+}
+
+#plot {
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+}
+@media (orientation: landscape) {
+    #plot {
+        width: 40vw;
+        height: 100%;
+    }
+}
+@media (orientation: portrait) {
+    #plot {
+        width: 100%;
+        height: 50vh;
+    }
+}
+
+#plot .plotContent {
+    flex: 0 1 auto;
+    min-height: 0;
+    height: 100%;
     width: 100%;
-    bottom: 0;
-    background-color: rgba(255,255,255,0.5);
-    border-bottom: 2px solid black;
 }
 
-#bottomScale .scaleIndicator {
-    position: absolute;
-    top: 0;
-    left: 0;
+#plot img {
+    object-fit: fill;
+    width: 100%;
     height: 100%;
-}
-
-#bottomScale .scaleIndicatorValue {
-    position: absolute;
-    vertical-align: middle;
-    padding: 0 3px;
-    bottom: 0;
-    height: 100%;
-    background-color: rgba(255,255,255,0.5);
-    border-left: 2px solid black;
 }
 
 .leaflet-container .leaflet-control-attribution {
@@ -196,6 +186,7 @@ body {
     max-height: 8em;
     overflow-y: auto;
 }
+
 .leaflet-container a.leaflet-control-collapse-button {
     position: absolute;
     bottom: 0;
@@ -228,6 +219,3 @@ body {
     z-index: 1001;
 }
 
-#offcanvas-content {
-    padding: 5px;
-}
