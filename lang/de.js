@@ -21,6 +21,8 @@ var dict = {
     "opacityIncreaseButton_title": "Deckkraft erhöhen",
     "soundingCheckbox_label": "Orte mit Vertikalprofilen (Temps) auf Karte anzeigen",
     "meteogramCheckbox_label": "Orte mit Meteogrammen auf Karte anzeigen",
+    "crosssection": "Vertikalquerschnitt",
+    "crosssectionHelp": "Auf der Karte zwei mal klicken, um Start- und Endpunkt des Vertikalquerschnittes auszuwählen. Zum Deaktivieren des Querschnitts-Tools die obige Schaltfläche nochmals drücken.",
     "Topography": "Topografie",
     "Grayscale": "Graustufen",
     "Airspace": "Lufträume",

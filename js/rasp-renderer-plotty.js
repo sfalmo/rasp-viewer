@@ -1,5 +1,6 @@
-import * as plotty from 'plotty';
+import { cColorscales } from '../config.js';
 import { isLandscape } from './utils';
+import * as plotty from 'plotty';
 
 L.RaspRendererPlotty = L.Class.extend({
     initialize: function(map, canvas, scale, options) {
@@ -19,14 +20,9 @@ L.RaspRendererPlotty = L.Class.extend({
             this._renderScale();
         });
 
-        plotty.addColorScale("rasp", ["#004dff", "#01f8e9", "#34c00c", "#f8fd00", "#ff9b00", "#ff1400"], [0, 0.2, 0.4, 0.6, 0.8, 1]);
-        plotty.addColorScale("bsratio", ["#00000040", "#00000020", "#00000020", "#00000000"], [0.2999999, 0.3, 0.6999999, 0.7]);
-        plotty.addColorScale("clouds", ["#ffffff", "#000000"], [0, 1]);
-        plotty.addColorScale("clouds_low", ["#ff000000", "#ff0000ff"], [0, 1]);
-        plotty.addColorScale("clouds_mid", ["#00ff0000", "#00ff00ff"], [0, 1]);
-        plotty.addColorScale("clouds_high", ["#0000ff00", "#0000ffff"], [0, 1]);
-        plotty.addColorScale("cloudpotential", ["#004dff", "#ffffbf", "#ff1400"], [0, 0.5, 1]);
-        plotty.addColorScale("pfd", ["#ffffff", "#fec6fe", "#fc64fc", "#7f93e2", "#2e5de5", "#009900", "#57fc00", "#ffe900", "#f08200", "#ae1700"], [0, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1]);
+        for (var c in cColorscales) {
+            plotty.addColorScale(c, cColorscales[c].colors, cColorscales[c].values);
+        }
         this.plottyplot = new plotty.plot({
             canvas: this.workingCanvas,
             domain: [0, 1],

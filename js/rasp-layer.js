@@ -98,7 +98,7 @@ L.RaspLayer = L.Layer.extend({
                 this.plottyRenderer.render(this.data, 2, {domain: this.domains[2], unit: this.units[2], colorscale: 'clouds_high', append: true});
             }
             if (parameter.composite.type == "press") {
-                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0]});
+                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], colorscale: 'verticalmotion'});
                 this.windbarbRenderer.render(this.data, 1, 2);
             }
         }

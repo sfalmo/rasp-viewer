@@ -15,6 +15,10 @@ def crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax=None
     cross_start = wrf.CoordPair(lat=lat_start, lon=lon_start)
     cross_end = wrf.CoordPair(lat=lat_end, lon=lon_end)
 
+    ter = wrf.getvar(wrf_file, "ter");
+    ter_line = wrf.interpline(ter, wrfin=wrf_file, start_point=cross_start, end_point=cross_end, meta=False)
+    ter_line = np.rint(ter_line).astype(int)
+
     h = wrf.getvar(wrf_file, "height")
     levels = np.rint(np.arange(0, hmax, dh)).astype(int)
 
@@ -22,7 +26,7 @@ def crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax=None
     w_cross = wrf.vertcross(w, h, levels=levels, missing=0, wrfin=wrf_file, start_point=cross_start, end_point=cross_end, meta=False)
     w_cross *= 100
     w_cross = np.rint(w_cross).astype(int)
-    return [levels, w_cross]
+    return [levels, ter_line, w_cross]
 
 
 def application(environ, start_response):
@@ -48,8 +52,8 @@ def application(environ, start_response):
     hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else None
     dh = float(q["dh"]) if "dh" in q and q["dh"] else None
     wrf_filename = environ["DOCUMENT_ROOT"] + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
-    levels, cross = crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax, dh)
-    result = np.concatenate((np.array(cross.shape), levels, cross.flatten()), dtype=np.int32)
+    levels, terrain, cross = crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax, dh)
+    result = np.concatenate((np.array(cross.shape), levels, terrain, cross.flatten()), dtype=np.int32)
 
     status = "200 OK"
     response_headers = [("Content-type", "application/octet-stream")]
@@ -59,7 +63,8 @@ def application(environ, start_response):
 
 # For testing
 if __name__ == "__main__":
-    levels, cross = crosssection("../../results/OUT/TIR/2022-03-17/0/wrfout_d02_2022-03-17_13:00:00", 50.3620, 13.0446, 50.7082, 12.74439)
+    levels, terrain, cross = crosssection("../../results/OUT/TIR/2022-03-22/0/wrfout_d02_2022-03-22_13:00:00", 50.3620, 13.0446, 50.7082, 12.74439)
     fig, ax = plt.subplots()
+    ax.plot(terrain)
     ax.pcolormesh(np.arange(0, cross.shape[1]), levels, cross)
     plt.show()

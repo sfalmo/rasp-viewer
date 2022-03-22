@@ -1,3 +1,4 @@
+import { cColorscales } from '../config.js';
 import * as plotty from 'plotty';
 import Plotly from 'plotly.js/dist/plotly-cartesian';
 
@@ -19,8 +20,8 @@ L.CrosssectionControl = L.Class.extend({
         var raspPanel = raspControl._raspPanel;
         var crosssectionDiv = L.DomUtil.create('div', 'mb-2', raspPanel);
         this.crosssectionButton = L.DomUtil.create('button', 'btn btn-outline-primary mb-1', crosssectionDiv);
-        this.crosssectionButton.title = "Cross Section";
-        this.crosssectionButton.innerHTML = "Cross Section";
+        this.crosssectionButton.title = dict["crosssection"];
+        this.crosssectionButton.innerHTML = dict["crosssection"];
         this.crosssectionHelp = L.DomUtil.create('div', '', crosssectionDiv);
         this.crosssectionButton.onclick = () => { this.toggleSelector(); };
 
@@ -44,7 +45,7 @@ L.CrosssectionControl = L.Class.extend({
         } else {
             this.isArmed = true;
             this.crosssectionButton.classList.add("active");
-            this.crosssectionHelp.innerHTML = "Click twice on the map to select the start and end point of the cross section. Press the above button again to deactivate the cross section tool.";
+            this.crosssectionHelp.innerHTML = dict["crosssectionHelp"];
             this._map._container.style.cursor = "crosshair";
             this._map.on('click', this._addPoint, this);
         }
@@ -79,16 +80,26 @@ L.CrosssectionControl = L.Class.extend({
         fetch(`crosssection?model=${model}&run_date=${runDate}&day=${day}&time=${time}&lat_start=${lat_start}&lon_start=${lon_start}&lat_end=${lat_end}&lon_end=${lon_end}`)
             .then(response => response.arrayBuffer())
             .then(buffer => {
+                // The incoming data is organized as follows:
+                // [height, width, levels..., terrain..., crosssectionData...]
+                // where
+                // levels has length height
+                // terrain has length width
+                // crosssectionData has length height*width
                 var array = new Int32Array(buffer);
                 var dims = array.subarray(0, 2);
                 var height = dims[0];
                 var width = dims[1];
                 var levels = array.subarray(2, height + 2);
-                var crosssectionData = array.subarray(height + 2);
+                var terrain = array.subarray(height + 2, height + 2 + width);
+                var crosssectionData = array.subarray(height + 2 + width);
                 var distance = new Int32Array([...Array(width).keys()]); // dummy distance for now
 
+                var colorscaleType = "verticalmotion";
+                var colorscale = cColorscales[colorscaleType].values.map((e, i) => { return [e, cColorscales[colorscaleType].colors[i]]; });
                 var plotlyData = [
                     {
+                        // vertical motion
                         type: 'heatmap',
                         x: distance,
                         y: levels,
@@ -96,13 +107,25 @@ L.CrosssectionControl = L.Class.extend({
                         zmin: -250,
                         zmax: 250,
                         zsmooth: 'best',
+                        colorscale: colorscale,
                         hovertemplate: '%{y:.0f}m, %{z}cm/s<extra></extra>'
+                    },
+                    {
+                        // terrain
+                        mode: 'lines',
+                        x: distance,
+                        y: terrain,
+                        fill: 'tozeroy',
+                        line: {
+                            color: '#808080',
+                        },
+                        hoverinfo: 'skip',
                     }
                 ];
                 var plotlyLayout = {
                     xaxis: {
-                        fixedrange: true,
-                        automargin: true
+                        visible: false,
+                        fixedrange: true
                     },
                     yaxis: {
                         automargin: true

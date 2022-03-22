@@ -21,6 +21,8 @@ var dict = {
     "opacityIncreaseButton_title": "Increase opacity",
     "soundingCheckbox_label": "Show sounding locations on map",
     "meteogramCheckbox_label": "Show meteogram locations on map",
+    "crosssection": "Cross Section",
+    "crosssectionHelp": "Click twice on the map to select the start and end point of the cross section. Press the above button again to deactivate the cross section tool.",
     "Topography": "Topography",
     "Grayscale": "Grayscale",
     "Airspace": "Airspace",

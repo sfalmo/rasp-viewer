@@ -65,6 +65,45 @@ const cModels = {
     }
 };
 
+const cColorscales = {
+    "rasp": {
+        colors: ["#004dff", "#01f8e9", "#34c00c", "#f8fd00", "#ff9b00", "#ff1400"],
+        values: [0, 0.2, 0.4, 0.6, 0.8, 1]
+    },
+    "bsratio": {
+        colors: ["#00000040", "#00000020", "#00000020", "#00000000"],
+        values: [0.2999999, 0.3, 0.6999999, 0.7]
+    },
+    "clouds": {
+        colors: ["#ffffff", "#000000"],
+        values: [0, 1]
+    },
+    "clouds_low": {
+        colors: ["#ff000000", "#ff0000ff"],
+        values: [0, 1]
+    },
+    "clouds_mid": {
+        colors: ["#00ff0000", "#00ff00ff"],
+        values: [0, 1]
+    },
+    "clouds_high": {
+        colors: ["#0000ff00", "#0000ffff"],
+        values: [0, 1]
+    },
+    "cloudpotential": {
+        colors: ["#004dff", "#ffffbf", "#ff1400"],
+        values: [0, 0.5, 1]
+    },
+    "verticalmotion": {
+        colors: ["#004dff", "#ffffbf", "#ff1400"],
+        values: [0, 0.5, 1]
+    },
+    "pfd": {
+        colors: ["#ffffff", "#fec6fe", "#fc64fc", "#7f93e2", "#2e5de5", "#009900", "#57fc00", "#ffe900", "#f08200", "#ae1700"],
+        values: [0, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1]
+    }
+};
+
 const cCategories = ["thermal", "cloud", "wind", "wave", "general", "experimental"];
 
 const cParameters = {
@@ -81,7 +120,7 @@ const cParameters = {
     "hbl":           { category: "thermal", "longname": dict["hbl.longname"],           "description": dict["hbl.description"], unit: "m", domain: [0, 3000] },
     "dbl":           { category: "thermal", "longname": dict["dbl.longname"],           "description": dict["dbl.description"], unit: "m", domain: [0, 3000] },
     "bltopvariab":   { category: "thermal", "longname": dict["bltopvariab.longname"],   "description": dict["bltopvariab.description"], unit: "m", domain: [0, 2000] },
-    "wblmaxmin":     { category: "thermal", "longname": dict["wblmaxmin.longname"],     "description": dict["wblmaxmin.description"], unit: "cm/s", domain: [-250, 250] },
+    "wblmaxmin":     { category: "thermal", "longname": dict["wblmaxmin.longname"],     "description": dict["wblmaxmin.description"], unit: "cm/s", domain: [-250, 250], colorscale: "verticalmotion" },
     "zwblmaxmin":    { category: "thermal", "longname": dict["zwblmaxmin.longname"],    "description": dict["zwblmaxmin.description"], unit: "m", domain: [0, 3000] },
     // Cloud
     "zsfclcldif":    { category: "cloud", "longname": dict["zsfclcldif.longname"],    "description": dict["zsfclcldif.description"], unit: "m", domain: [-1000, 1000], colorscale: "cloudpotential" },
@@ -213,4 +252,4 @@ const cDefaults = {
     markerSize: 15
 };
 
-export { cModels , cCategories , cParameters , cSoundings , cMeteograms , cLayers , cDefaults };
+export { cModels , cColorscales , cCategories , cParameters , cSoundings , cMeteograms , cLayers , cDefaults };
