@@ -1,4 +1,4 @@
-import { cModels , cCategories , cParameters , cSoundings , cMeteograms , cLayers , cDefaults } from '../config.js';
+import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
 import valueIndicator from './value-indicator.js';
 import raspRendererPlotty from './rasp-renderer-plotty.js';
 import raspRendererWindbarbs from './rasp-renderer-windbarbs.js';

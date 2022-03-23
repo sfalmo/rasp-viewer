@@ -1,7 +1,7 @@
 import * as GeoTIFF from 'geotiff';
 import * as plotty from 'plotty';
 
-import { cModels , cCategories , cParameters , cSoundings , cMeteograms , cLayers , cDefaults } from '../config.js';
+import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
 import validIndicator from './valid-indicator.js';
 import datetimeSelector from './datetime-selector.js';
 import crosssectionControl from './crosssection-control.js';
@@ -16,10 +16,6 @@ L.Control.RASPControl = L.Control.extend({
         iconUrl: cDefaults.meteogramMarker,
         iconSize: [cDefaults.markerSize, cDefaults.markerSize]
     }),
-    soundingIcon: L.icon({
-        iconUrl: cDefaults.soundingMarker,
-        iconSize: [cDefaults.markerSize, cDefaults.markerSize]
-    }),
     onAdd: function(map) {
         this.loadingAnimation.style.visibility = 'hidden';
         this._map = map;
@@ -28,15 +24,9 @@ L.Control.RASPControl = L.Control.extend({
         this.raspLayer = raspLayer().addTo(map);
         this.validIndicator = validIndicator().addTo(map);
 
-        this.plotCanvas = document.createElement('canvas');
-
-        this.plot.onclick = e => {
-            var button = e.target.closest('button');
-            if (button && button.dataset.toggle == 'plotClose') {
-                this.closePlot();
-            }
-        };
-        this.plotContent = this.plot.getElementsByClassName("plotContent")[0];
+        this.plotContent = document.getElementById("plotContent");
+        this.plotClose = document.getElementById("plotClose");
+        this.plotClose.onclick = () => { this.closePlot(); };
 
         this.loadingMeta = false;
         this.loadingBlipmap = false;
@@ -51,7 +41,23 @@ L.Control.RASPControl = L.Control.extend({
                 this.validIndicator.update(dict["dataMissing"], false);
             });
 
+        this.on('modelDayChange', () => { this.modelDayChange(); });
+        this.on('timeChange', () => { this.update(); });
+
         return this._container;
+    },
+    dispatchEvent: function(event) {
+        this._container.dispatchEvent(event);
+    },
+    on: function(event, func) {
+        this._container.addEventListener(event, func);
+    },
+    off: function(event, func) {
+        if (func) {
+            this._container.removeEventListener(event, func);
+        } else {
+            this._container.removeEventListener(event);
+        }
     },
     _initPanel: function() {
         this._container = L.DomUtil.create('div', 'leaflet-control-layers rasp-control');
@@ -120,20 +126,12 @@ L.Control.RASPControl = L.Control.extend({
         opacityUpButton.title = dict["opacityIncreaseButton_title"];
         opacityUpButton.innerHTML = "+";
 
-        var soundingDiv = L.DomUtil.create('div', 'col-auto', miscControls);
-        var soundingLabel = L.DomUtil.create('label', '', soundingDiv);
-        soundingLabel.title = dict["soundingCheckbox_label"];
-        this.soundingCheckbox = L.DomUtil.create('input', 'me-1', soundingLabel);
-        this.soundingCheckbox.type = 'checkbox';
-        this.soundingCheckbox.onchange = () => { this.toggleSoundingsOrMeteograms(); };
-        var soundingText = L.DomUtil.create('span', '', soundingLabel);
-        soundingText.innerHTML = dict["Soundings"];
         var meteogramDiv = L.DomUtil.create('div', 'col-auto', miscControls);
         var meteogramLabel = L.DomUtil.create('label', '', meteogramDiv);
         meteogramLabel.title = dict["meteogramCheckbox_label"];
         this.meteogramCheckbox = L.DomUtil.create('input', 'me-1', meteogramLabel);
         this.meteogramCheckbox.type = 'checkbox';
-        this.meteogramCheckbox.onchange = () => { this.toggleSoundingsOrMeteograms(); };
+        this.meteogramCheckbox.onchange = () => { this.toggleMeteograms(); };
         var meteogramText = L.DomUtil.create('span', '', meteogramLabel);
         meteogramText.innerHTML = dict["Meteograms"];
 
@@ -217,15 +215,11 @@ L.Control.RASPControl = L.Control.extend({
     modelDayChange: function() {
         var model = this.datetimeSelector.get().model;
         var dir = this.datetimeSelector.get().dir;
-        if (this.soundingOverlay) {
-            this.soundingOverlay.remove();
-        }
         if (this.meteogramOverlay) {
             this.meteogramOverlay.remove();
         }
-        this.soundingOverlay = this.getSoundingMarkers(model);
         this.meteogramOverlay = this.getMeteogramMarkers(model);
-        this.toggleSoundingsOrMeteograms();
+        this.toggleMeteograms();
         this.doParameterList(); // could have different parameters
         this.parameterCategoryChange();
         if (this.currentPlot && this.currentPlot.type == "meteogram") {
@@ -264,10 +258,6 @@ L.Control.RASPControl = L.Control.extend({
         var parameter = cParameters[parameterKey];
         var urls = this.getDataUrls(dir, parameterKey, time);
         this._updateBlipmap(urls.geotiffUrls, parameter);
-        if (this.currentPlot && this.currentPlot.type == "sounding") {
-            this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/sounding" + this.currentPlot.key + ".curr." + time + "lst.d2.png";
-            this.currentPlot.image.src = this.currentPlot.imageUrl;
-        }
         this._updateMeta(urls.metaUrl, parameter.longname, day);
     },
     _updateMeta: function(metaUrl, parameterLongname, day) {
@@ -324,15 +314,7 @@ L.Control.RASPControl = L.Control.extend({
         this.loadingBlipmap = true;
         this._armLoadingAnimation();
     },
-    toggleSoundingsOrMeteograms: function() {
-        if (this.soundingCheckbox.checked) {
-            this.soundingOverlay.addTo(this._map);
-        } else {
-            if (this.currentPlot && this.currentPlot.type == "sounding") {
-                this.closePlot();
-            }
-            this.soundingOverlay.remove();
-        }
+    toggleMeteograms: function() {
         if (this.meteogramCheckbox.checked) {
             this.meteogramOverlay.addTo(this._map);
         } else {
@@ -346,41 +328,18 @@ L.Control.RASPControl = L.Control.extend({
         this.plot.style.display = "none";
         this._map.invalidateSize();
         this.currentPlot = null;
+        this.crosssectionControl.disable();
+        this.soundingControl.disable();
     },
     updatePlot: function() {
         this.plot.style.display = "";
         this.plotContent.innerHTML = "";
-        if (this.currentPlot.type == "meteogram" || this.currentPlot.type == "sounding") {
+        if (this.currentPlot.type == "meteogram") {
             this.currentPlot.image.style.objectFit = "contain";
             this.plotContent.appendChild(this.currentPlot.image);
         }
         this.loadingPlot = false;
         this._hideLoadingAnimationMaybe();
-    },
-    getSoundingMarkers: function(modelKey) {
-        var markers = [];
-        var soundings = cSoundings[modelKey];
-        for (const soundingKey of Object.keys(soundings)) {
-            var sounding = soundings[soundingKey];
-            markers.push(
-                L.marker(sounding.location, {icon: this.soundingIcon})
-                    .bindTooltip(sounding.name)
-                    .on('click', e => {
-                        var dir = this.datetimeSelector.get().dir;
-                        var time = this.datetimeSelector.get().time;
-                        this.currentPlot = {type: "sounding", key: soundingKey};
-                        this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/sounding" + soundingKey + ".curr." + time + "lst.d2.png";
-                        this.currentPlot.image = new Image();
-                        this.currentPlot.image.onload = () => {
-                            this.updatePlot();
-                        };
-                        this.currentPlot.image.src = this.currentPlot.imageUrl;
-                        this.loadingPlot = true;
-                        this._armLoadingAnimation();
-                    })
-            );
-        }
-        return L.layerGroup(markers);
     },
     getMeteogramMarkers: function(modelKey) {
         var markers = [];

@@ -1,4 +1,4 @@
-import { cModels , cCategories , cParameters , cSoundings , cMeteograms , cLayers , cDefaults } from '../config.js';
+import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
 
 L.Control.DatetimeSelector = L.Control.extend({
     options: {
@@ -18,7 +18,9 @@ L.Control.DatetimeSelector = L.Control.extend({
         this.modelDaySelect.title = dict["modelDaySelect_title"];
         this.modelDaySelect.onchange = () => {
             this.doHours();
-            this._raspControl.modelDayChange();
+            var data = this.get();
+            var event = new CustomEvent('modelDayChange', { detail: data });
+            this._raspControl.dispatchEvent(event);
         };
         var timeGroup = L.DomUtil.create('div', 'input-group ms-1 w-auto rounded', modelDayTimeDiv);
         timeGroup.style.backgroundColor = "rgba(255, 255, 255, 1)";
@@ -26,16 +28,24 @@ L.Control.DatetimeSelector = L.Control.extend({
         this.timePrevButton.innerHTML = '◄';
         this.timePrevButton.onclick = () => {
             this.timeChangeCyclic(-1);
-            this._raspControl.update();
+            var data = this.get();
+            var event = new CustomEvent('timeChange', { detail: data });
+            this._raspControl.dispatchEvent(event);
         };
         this.timeSelect = L.DomUtil.create('select', 'form-select', timeGroup);
-        this.timeSelect.onchange = () => { this._raspControl.update(); };
+        this.timeSelect.onchange = () => {
+            var data = this.get();
+            var event = new CustomEvent('timeChange', { detail: data });
+            this._raspControl.dispatchEvent(event);
+        };
         this.timeSelect.title = dict["timeSelect_title"];
         this.timeNextButton = L.DomUtil.create('button', 'btn btn-outline-secondary', timeGroup);
         this.timeNextButton.innerHTML = '►';
         this.timeNextButton.onclick = () => {
             this.timeChangeCyclic(1);
-            this._raspControl.update();
+            var data = this.get();
+            var event = new CustomEvent('timeChange', { detail: data });
+            this._raspControl.dispatchEvent(event);
         };
 
         return this._container;

@@ -12,25 +12,40 @@ L.SoundingControl = L.Class.extend({
         this.soundingHelp = L.DomUtil.create('div', '', soundingDiv);
         this.soundingButton.onclick = () => { this.toggleSelector(); };
         this.soundingStatus = L.DomUtil.create('div', 'text-danger', soundingDiv);
+        this._raspControl.on('modelDayChange', () => { this.update(); });
+        this._raspControl.on('timeChange', () => { this.update(); });
 
         this.point = null;
     },
+    enable: function() {
+        if (this.isArmed) {
+            return;
+        }
+        this._raspControl.closePlot();
+        this.isArmed = true;
+        this.soundingButton.classList.add("active");
+        this.soundingHelp.innerHTML = dict["soundingHelp"];
+        this._map._container.style.cursor = "crosshair";
+        this._map.on('click', this._selectPoint, this);
+    },
+    disable: function() {
+        if (!this.isArmed) {
+            return;
+        }
+        this.isArmed = false;
+        this.soundingButton.classList.remove("active");
+        this.soundingHelp.innerHTML = "";
+        this.soundingStatus.innerHTML = "";
+        this._map._container.style.cursor = "";
+        this._map.off('click', this._selectPoint, this);
+        this._removePoint();
+        this._raspControl.closePlot();
+    },
     toggleSelector: function() {
         if (this.isArmed) {
-            this.isArmed = false;
-            this.soundingButton.classList.remove("active");
-            this.soundingHelp.innerHTML = "";
-            this.soundingStatus.innerHTML = "";
-            this._map._container.style.cursor = "";
-            this._map.off('click', this._selectPoint, this);
-            this._removePoint();
-            this._raspControl.closePlot();
+            this.disable();
         } else {
-            this.isArmed = true;
-            this.soundingButton.classList.add("active");
-            this.soundingHelp.innerHTML = dict["soundingHelp"];
-            this._map._container.style.cursor = "crosshair";
-            this._map.on('click', this._selectPoint, this);
+            this.enable();
         }
     },
     _removePoint: function() {

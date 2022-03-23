@@ -14,25 +14,40 @@ L.CrosssectionControl = L.Class.extend({
         this.crosssectionHelp = L.DomUtil.create('div', '', crosssectionDiv);
         this.crosssectionButton.onclick = () => { this.toggleSelector(); };
         this.crosssectionStatus = L.DomUtil.create('div', 'text-danger', crosssectionDiv);
+        this._raspControl.on('modelDayChange', () => { this.update(); });
+        this._raspControl.on('timeChange', () => { this.update(); });
 
         this.points = [];
     },
+    enable: function() {
+        if (this.isArmed) {
+            return;
+        }
+        this._raspControl.closePlot();
+        this.isArmed = true;
+        this.crosssectionButton.classList.add("active");
+        this.crosssectionHelp.innerHTML = dict["crosssectionHelp"];
+        this._map._container.style.cursor = "crosshair";
+        this._map.on('click', this._addPoint, this);
+    },
+    disable: function() {
+        if (!this.isArmed) {
+            return;
+        }
+        this.isArmed = false;
+        this.crosssectionButton.classList.remove("active");
+        this.crosssectionHelp.innerHTML = "";
+        this.crosssectionStatus.innerHTML = "";
+        this._map._container.style.cursor = "";
+        this._map.off('click', this._addPoint, this);
+        this._removePoints();
+        this._raspControl.closePlot();
+    },
     toggleSelector: function() {
         if (this.isArmed) {
-            this.isArmed = false;
-            this.crosssectionButton.classList.remove("active");
-            this.crosssectionHelp.innerHTML = "";
-            this.crosssectionStatus.innerHTML = "";
-            this._map._container.style.cursor = "";
-            this._map.off('click', this._addPoint, this);
-            this._removePoints();
-            this._raspControl.closePlot();
+            this.disable();
         } else {
-            this.isArmed = true;
-            this.crosssectionButton.classList.add("active");
-            this.crosssectionHelp.innerHTML = dict["crosssectionHelp"];
-            this._map._container.style.cursor = "crosshair";
-            this._map.on('click', this._addPoint, this);
+            this.enable();
         }
     },
     _removePoints: function() {
@@ -55,6 +70,9 @@ L.CrosssectionControl = L.Class.extend({
         }
     },
     update: function() {
+        if (!this.isArmed || !this.points.length == 2) {
+            return;
+        }
         var {model, runDate, validDate, day, dir, time} = this._raspControl.datetimeSelector.get();
         var { lat: lat_start, lng: lon_start } = this.points[0].getLatLng();
         var { lat: lat_end, lng: lon_end } = this.points[1].getLatLng();

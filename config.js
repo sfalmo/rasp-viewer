@@ -177,21 +177,6 @@ const cParameters = {
     "blcwbase":      { category: "experimental", "longname": dict["blcwbase.longname"],      "description": dict["blcwbase.description"], unit: "m", domain: [0, 3000] },
 };
 
-const cSoundings = {
-    "TIR": {
-        // keys: "1" -> sounding1, "2" -> sounding2, ...
-        "1": { "name": "Tirschenreuth",     "location": ["49.8741", "12.3272"] },
-        "2": { "name": "Oberhinkofen",      "location": ["48.9523", "12.1462"] },
-        "3": { "name": "Bamberg",           "location": ["49.9179", "10.9121"] },
-        "4": { "name": "Jena",              "location": ["50.9164", "11.7171"] },
-        "5": { "name": "Nördlingen",        "location": ["48.8703", "10.5034"] },
-        "6": { "name": "Großrückerswalde",  "location": ["50.6431", "13.1274"] },
-        "7": { "name": "Klatovy",           "location": ["49.4172", "13.3215"] },
-        "8": { "name": "Wasserkuppe",       "location": ["50.4989", "9.9541"] },
-        "9": { "name": "Sonnen",            "location": ["48.6823", "13.6949"] }
-    }
-};
-
 const cMeteograms = {
     "TIR": {
         // keys: "Someplace" -> meteogram_Someplace, ...
@@ -252,4 +237,4 @@ const cDefaults = {
     markerSize: 15
 };
 
-export { cModels , cColorscales , cCategories , cParameters , cSoundings , cMeteograms , cLayers , cDefaults };
+export { cModels , cColorscales , cCategories , cParameters , cMeteograms , cLayers , cDefaults };

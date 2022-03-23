@@ -2,7 +2,7 @@
 
 ## Start a run
 
-First, make sure that a secret key with the filename `<project>_key` exists in this directory.
+First, make sure that a secret key with the filename `<project>_key` exists in your `.ssh` directory, where `<project>` is the name of the Google Cloud project.
 This key is used by the compute instance to transfer the results of the run back to the webserver.
 
 ```shell

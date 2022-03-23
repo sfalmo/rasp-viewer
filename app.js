@@ -1,4 +1,4 @@
-import { cModels , cParameters , cSoundings , cMeteograms , cLayers , cDefaults } from './config.js';
+import { cModels , cLayers , cDefaults } from './config.js';
 
 import aufwindeAttribution from './js/aufwinde-attribution.js';
 import raspControl from './js/rasp-control.js';
