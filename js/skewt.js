@@ -1,5 +1,57 @@
 import * as d3 from 'd3';
 
+// Gas constant for dry air at the surface of the Earth
+const Rd = 287;
+// Specific heat at constant pressure for dry air
+const Cpd = 1005;
+// Molecular weight ratio
+const epsilon = 18.01528 / 28.9644;
+// Heat of vaporization of water
+const Lv = 2501000;
+// Ratio of the specific gas constant of dry air to the specific gas constant for water vapour
+const satPressure0c = 6.112;
+// C + celsiusToK -> K
+const celsiusToK = 273.15;
+const L = -6.5e-3;
+const g = 9.80665;
+
+function wobus(t) {
+    var X = t - 20;
+    var POL, DWOBFSKEWT;
+    if (X < 0) {
+        POL = 1 + X * (-8.8416605e-03 + X* (1.4714143e-04+X* (-9.6719890e-07+X* (-3.2607217e-08 + X* (-3.8598073e-10)))));
+        return 15.130/POL**4;
+    } else {
+        POL = 1 + X* (3.6182989e-03 + X* (-1.3603273e-05+X* (4.9618922e-07+X* (-6.1059365e-09 + X* (3.9401551e-11+X* (-1.2588129e-13 + X* (1.6688280e-16)))))));
+        return 29.930/POL**4 + 0.96*X - 14.8;
+    }
+}
+
+function tempDryAdiabat(p, t0, p0) {
+    return (t0 + celsiusToK) * Math.pow(p / p0, Rd / Cpd) - celsiusToK;
+}
+
+function mixingRatio(partialPressure, totalPressure, molecularWeightRatio = epsilon) {
+    return (molecularWeightRatio * partialPressure) / (totalPressure - partialPressure);
+}
+
+function saturationVaporPressure(tK) {
+    const tC = tK - celsiusToK;
+    return satPressure0c * Math.exp((17.67 * tC) / (tC + 243.5));
+}
+
+function saturationMixingRatio(p, tK) {
+    return mixingRatio(saturationVaporPressure(tK), p);
+}
+
+function moistGradientT(p, t) {
+    const tK = t + celsiusToK;
+    const rs = saturationMixingRatio(p, tK);
+    const n = Rd * tK + Lv * rs;
+    const d = Cpd + (Math.pow(Lv, 2) * rs * epsilon) / (Rd * Math.pow(tK, 2));
+    return (1 / p) * (n / d);
+}
+
 var SkewT = function(div) {
     //properties used in calculations
     var wrapper = d3.select(div);
@@ -7,22 +59,18 @@ var SkewT = function(div) {
     var height = width; //tofix
     var margin = {top: 10, right: 50, bottom: 20, left: 40}; //container margins
     var deg2rad = (Math.PI/180);
-    var tan = Math.tan(55*deg2rad);
     var basep = 1050;
     var topp = 250;
     var plines = [1000,850,700,500,300,200];
-    var pticks = [950,900,800,750,650,600,550,450,400,350,250];
     var barbsize = 20;
     // functions for Scales and axes. Note the inverted domain for the y-scale: bigger is up!
     var r = d3.scaleLinear().range([0,300]).domain([0,150]);
     var y2 = d3.scaleLinear();
     var bisectTemp = d3.bisector(function(d) { return d.press; }).left; // bisector function for tooltips
-    var w, h, x, y, xAxis, yAxis, yAxis2;
+    var w, h, tan, x, y, xAxis, yAxis;
     var data = [];
-    //aux
     var unit = "m/s"; // or kmh
 
-    //containers
     var svg = wrapper.append("svg").attr("id", "svg");	 //main svg
     var container = svg.append("g").attr("id", "container"); //container
     var skewtbg = container.append("g").attr("id", "skewtbg");//background
@@ -32,17 +80,27 @@ var SkewT = function(div) {
         .style("stroke-width", "1px")
         .style("fill", "none");
 
-    //local functions
     function setVariables() {
         width = parseInt(wrapper.style('width'), 10);
         height = parseInt(wrapper.style('height'), 10);
         w = width - margin.left - margin.right;
         h = height - margin.top - margin.bottom;
-        x = d3.scaleLinear().range([0, w]).domain([-45,50]);
+        tan = h / w * 2;
+        x = d3.scaleLinear().range([0, w]).domain([-40,40]);
         y = d3.scaleLog().range([0, h]).domain([topp, basep]);
         xAxis = d3.axisBottom(x).tickSize(0,0).ticks(10);
         yAxis = d3.axisLeft(y).tickSize(0,0).tickValues(plines).tickFormat(d3.format(".0d"));
-        yAxis2 = d3.axisRight(y).tickSize(5,0).tickValues(pticks);
+    }
+
+    function skewx(temp, press) {
+        return x(temp) + (y(basep) - y(press)) / tan;
+    }
+
+    function skewline(tempkey) {
+        return d3.line()
+            .curve(d3.curveMonotoneY)
+            .x(function(d, i) { return skewx(d[tempkey], d.press);})
+            .y(function(d, i) { return y(d.press); } );
     }
 
     function convert(msvalue, unit) {
@@ -91,7 +149,7 @@ var SkewT = function(div) {
             .attr("y2", h)
             .style("stroke", "#aaa")
             .style("fill", "none")
-            .style("stroke-width", function(d) { return d == 0 ? "1.25px" : "0.75px"; })
+            .style("stroke-width", function(d) { return d == 0 ? "1.5px" : "1px"; })
             .attr("clip-path", "url(#clipper)");
 
         // Logarithmic pressure lines
@@ -104,32 +162,51 @@ var SkewT = function(div) {
             .attr("y2", function(d) { return y(d); })
             .style("stroke", "#aaa")
             .style("fill", "none")
-            .style("stroke-width", "0.75px");
+            .style("stroke-width", "1px");
 
-        // create array to plot dry adiabats
-        var pp = d3.range(topp,basep+1,10);
-        var dryad = d3.range(-30,240,20);
-        var all = [];
-        for (var i=0; i<dryad.length; i++) {
-            var z = [];
-            for (var j=0; j<pp.length; j++) { z.push(dryad[i]); }
-            all.push(z);
+        var p0 = 1000;
+        let dp = 10;
+
+        var dryadiabats = [];
+        for (let t0 of d3.range(-30, 100, 10)) {
+            let dryad = [];
+            for (let press of d3.range(basep, topp - 1, -dp)) {
+                dryad.push({temp: tempDryAdiabat(press, t0, p0), press: press});
+            }
+            dryadiabats.push(dryad);
         }
 
-        var dryline = d3.line()
-            .curve(d3.curveBasis)
-            .x(function(d,i) { return x( ( 273.15 + d ) / Math.pow( (1000/pp[i]), 0.286) -273.15) + (y(basep)-y(pp[i]))/tan;})
-            .y(function(d,i) { return y(pp[i]); } );
+        var moistadiabats = [];
+        for (let t0 of d3.range(0, 35, 5)) {
+            // The moist adiabats are approximated by numerical integration of the moist temperature gradient
+            let moistad = [];
+            let temp = t0;
+            for (let press of d3.range(basep, topp - 1, -dp)) {
+                moistad.push({temp: temp, press: press});
+                temp -= dp * moistGradientT(press, temp);
+            }
+            moistadiabats.push(moistad);
+        }
 
         // Draw dry adiabats
         skewtbg.selectAll("dryadiabatline")
-            .data(all)
+            .data(dryadiabats)
             .enter().append("path")
-            .style("stroke", "#aaa")
+            .style("stroke", "#fa0")
             .style("fill", "none")
-            .style("stroke-width", "0.75px")
+            .style("stroke-width", "0.5px")
             .attr("clip-path", "url(#clipper)")
-            .attr("d", dryline);
+            .attr("d", skewline("temp"));
+
+        // Draw moist adiabats
+        skewtbg.selectAll("moistadiabatline")
+            .data(moistadiabats)
+            .enter().append("path")
+            .style("stroke", "#380")
+            .style("fill", "none")
+            .style("stroke-width", "0.5px")
+            .attr("clip-path", "url(#clipper)")
+            .attr("d", skewline("temp"));
 
         // Line along right edge of plot
         skewtbg.append("line")
@@ -144,7 +221,6 @@ var SkewT = function(div) {
         // Add axes
         skewtbg.append("g").attr("transform", "translate(0," + (h-0.5) + ")").call(xAxis);
         skewtbg.append("g").attr("transform", "translate(-0.5,0)").call(yAxis);
-        skewtbg.append("g").attr("transform", "translate(-0.5,0)").call(yAxis2).selectAll("text").style("display", "none");
     };
 
     var makeBarbTemplates = function(){
@@ -193,7 +269,7 @@ var SkewT = function(div) {
         tmpcfocus.append("circle").attr("r", 4);
         tmpcfocus.append("text").attr("x", 9).attr("dy", ".35em");
 
-        var dwpcfocus = skewtgroup.append("g").style("fill", "green").style("stroke", "none").style("display", "none");
+        var dwpcfocus = skewtgroup.append("g").style("fill", "blue").style("stroke", "none").style("display", "none");
         dwpcfocus.append("circle").attr("r", 4);
         dwpcfocus.append("text").attr("x", -9).attr("text-anchor", "end").attr("dy", ".35em");
 
@@ -216,14 +292,14 @@ var SkewT = function(div) {
                 var d0 = lines[i - 1];
                 var d1 = lines[i];
                 var d = y0 - d0.press > d1.press - y0 ? d1 : d0;
-                tmpcfocus.attr("transform", "translate(" + (x(d.temp) + (y(basep)-y(d.press))/tan)+ "," + y(d.press) + ")");
-                dwpcfocus.attr("transform", "translate(" + (x(d.dwpt) + (y(basep)-y(d.press))/tan)+ "," + y(d.press) + ")");
+                tmpcfocus.attr("transform", "translate(" + skewx(d.temp, d.press) + "," + y(d.press) + ")");
+                dwpcfocus.attr("transform", "translate(" + skewx(d.dwpt, d.press)+ "," + y(d.press) + ")");
                 hghtfocus.attr("transform", "translate(0," + y(d.press) + ")");
                 tmpcfocus.select("text").text(Math.round(d.temp)+"°C");
                 dwpcfocus.select("text").text(Math.round(d.dwpt)+"°C");
-                hghtfocus.select("text").text("- "+Math.round(d.hght)+" m");   //hgt or hghtagl ???
-                wspdfocus.attr("transform", "translate(" + (w-65)  + "," + y(d.press) + ")");
-                wspdfocus.select("text").text(Math.round(convert(d.wspd, unit)*10)/10 + " " + unit);
+                hghtfocus.select("text").text("- "+Math.round(d.hght)+" m");
+                wspdfocus.attr("transform", "translate(" + (w-60)  + "," + y(d.press) + ")");
+                wspdfocus.select("text").text(Math.round(convert(d.wspd, unit)) + " " + unit);
             });
     };
 
@@ -239,23 +315,21 @@ var SkewT = function(div) {
         var skewtlines = [];
         skewtlines.push(skewtline);
 
-        var templine = d3.line().curve(d3.curveBasis).x(function(d,i) { return x(d.temp) + (y(basep)-y(d.press))/tan; }).y(function(d,i) { return y(d.press); });
         var tempLines = skewtgroup.selectAll("templines")
             .data(skewtlines).enter().append("path")
             .style("fill", "none")
             .style("stroke", "red")
             .style("stroke-width", "2px")
             .attr("clip-path", "url(#clipper)")
-            .attr("d", templine);
+            .attr("d", skewline("temp"));
 
-        var tempdewline = d3.line().curve(d3.curveBasis).x(function(d,i) { return x(d.dwpt) + (y(basep)-y(d.press))/tan; }).y(function(d,i) { return y(d.press); });
         var tempDewlines = skewtgroup.selectAll("tempdewlines")
             .data(skewtlines).enter().append("path")
             .style("fill", "none")
-            .style("stroke", "green")
+            .style("stroke", "blue")
             .style("stroke-width", "2px")
             .attr("clip-path", "url(#clipper)")
-            .attr("d", tempdewline);
+            .attr("d", skewline("dwpt"));
 
         //barbs stuff
         var barbs = skewtline.filter(function(d) { return (d.wdir >= 0 && d.wspd >= 0 && d.press >= topp); });
