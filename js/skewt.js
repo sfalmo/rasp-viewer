@@ -15,18 +15,6 @@ const celsiusToK = 273.15;
 const L = -6.5e-3;
 const g = 9.80665;
 
-function wobus(t) {
-    var X = t - 20;
-    var POL, DWOBFSKEWT;
-    if (X < 0) {
-        POL = 1 + X * (-8.8416605e-03 + X* (1.4714143e-04+X* (-9.6719890e-07+X* (-3.2607217e-08 + X* (-3.8598073e-10)))));
-        return 15.130/POL**4;
-    } else {
-        POL = 1 + X* (3.6182989e-03 + X* (-1.3603273e-05+X* (4.9618922e-07+X* (-6.1059365e-09 + X* (3.9401551e-11+X* (-1.2588129e-13 + X* (1.6688280e-16)))))));
-        return 29.930/POL**4 + 0.96*X - 14.8;
-    }
-}
-
 function tempDryAdiabat(p, t0, p0) {
     return (t0 + celsiusToK) * Math.pow(p / p0, Rd / Cpd) - celsiusToK;
 }
@@ -50,6 +38,15 @@ function moistGradientT(p, t) {
     const n = Rd * tK + Lv * rs;
     const d = Cpd + (Math.pow(Lv, 2) * rs * epsilon) / (Rd * Math.pow(tK, 2));
     return (1 / p) * (n / d);
+}
+
+function vaporPressure(p, mixing) {
+    return (p * mixing) / (epsilon + mixing);
+}
+
+function dewpoint(vaporp) {
+    const val = Math.log(vaporp / satPressure0c);
+    return (243.5 * val) / (17.67 - val);
 }
 
 var SkewT = function(div) {
@@ -188,6 +185,17 @@ var SkewT = function(div) {
             moistadiabats.push(moistad);
         }
 
+        var isohumes = [];
+        for (let mixingRatio of [1, 2, 5, 10, 20]) { // mixing ratio in g/kg
+            mixingRatio /= 1000;
+            let isoh = [];
+            for (let press of d3.range(basep, 401, -dp)) {
+                isoh.push({temp: dewpoint(vaporPressure(press, mixingRatio)), press: press});
+            }
+            isohumes.push(isoh);
+        }
+        console.log(isohumes);
+
         // Draw dry adiabats
         skewtbg.selectAll("dryadiabatline")
             .data(dryadiabats)
@@ -205,6 +213,17 @@ var SkewT = function(div) {
             .style("stroke", "#380")
             .style("fill", "none")
             .style("stroke-width", "0.5px")
+            .attr("clip-path", "url(#clipper)")
+            .attr("d", skewline("temp"));
+
+        // Draw isohumes
+        skewtbg.selectAll("isohumeline")
+            .data(isohumes)
+            .enter().append("path")
+            .style("stroke", "#380")
+            .style("fill", "none")
+            .style("stroke-width", "0.5px")
+            .style("stroke-dasharray", "3")
             .attr("clip-path", "url(#clipper)")
             .attr("d", skewline("temp"));
 
