@@ -10,7 +10,7 @@ L.SoundingControl = L.Class.extend({
         this.soundingButton.title = dict["sounding"];
         this.soundingButton.innerHTML = dict["sounding"];
         this.soundingHelp = L.DomUtil.create('div', '', soundingDiv);
-        this.soundingButton.onclick = () => { this.toggleSelector(); };
+        this.soundingButton.onclick = () => { this.toggle(); };
         this.soundingStatus = L.DomUtil.create('div', 'text-danger', soundingDiv);
         this._raspControl.on('modelDayChange', () => { this.update(); });
         this._raspControl.on('timeChange', () => { this.update(); });
@@ -22,6 +22,7 @@ L.SoundingControl = L.Class.extend({
             return;
         }
         this._raspControl.closePlot();
+        this._raspControl.disableAllMapSelectors();
         this.isArmed = true;
         this.soundingButton.classList.add("active");
         this.soundingHelp.innerHTML = dict["soundingHelp"];
@@ -38,24 +39,24 @@ L.SoundingControl = L.Class.extend({
         this.soundingStatus.innerHTML = "";
         this._map._container.style.cursor = "";
         this._map.off('click', this._selectPoint, this);
-        this._removePoint();
+        this.clear();
         this._raspControl.closePlot();
     },
-    toggleSelector: function() {
+    toggle: function() {
         if (this.isArmed) {
             this.disable();
         } else {
             this.enable();
         }
     },
-    _removePoint: function() {
+    clear: function() {
         if (this.point) {
             this.point.remove();
         }
         this.point = null;
     },
     _selectPoint: function(e) {
-        this._removePoint();
+        this.clear();
         var marker = L.marker(e.latlng, {draggable: true}).addTo(this._map)
             .on('moveend', () => { this.update(); });
         this.point = marker;

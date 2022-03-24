@@ -5,7 +5,7 @@ L.Control.Attribution.Aufwinde = L.Control.Attribution.extend({
         var parent     = this._container.parentNode;
         parent.onclick = event => event.stopPropagation();
         var aufwindeAttribution   = document.createElement('div');
-        aufwindeAttribution.innerHTML = "<a href='/'>aufwin.de</a> | <a href='/impressum.html'>" + dict["legalNotice"] + "</a> - <a href='/datenschutz.html'>" + dict["privacyPolicy"] + "</a> - <a href='https://github.com/sfalmo/rasp-viewer' target='_blank'>GitHub</a> - <a href='.' onclick=\"localStorage.setItem('lang','de');\">DE</a> - <a href='.' onclick=\"localStorage.setItem('lang','en');\">EN</a> - ";
+        aufwindeAttribution.innerHTML = "<a href='/'>aufwin.de</a> | <a href='/impressum.html'>" + dict["legalNotice"] + "</a> - <a href='/datenschutz.html'>" + dict["privacyPolicy"] + "</a> - <a href='.' onclick=\"localStorage.setItem('lang','de');\">DE</a> - <a href='.' onclick=\"localStorage.setItem('lang','en');\">EN</a> - <a href='https://github.com/sfalmo/rasp-viewer' target='_blank'>GitHub</a> - ";
         aufwindeAttribution.classList.add('leaflet-control');
         aufwindeAttribution.classList.add('leaflet-control-attribution');
         var toggle = document.createElement('a');

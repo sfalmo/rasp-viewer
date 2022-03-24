@@ -161,14 +161,13 @@ var SkewT = function(div) {
             .style("fill", "none")
             .style("stroke-width", "1px");
 
-        var p0 = 1000;
         let dp = 10;
 
         var dryadiabats = [];
         for (let t0 of d3.range(-30, 100, 10)) {
             let dryad = [];
             for (let press of d3.range(basep, topp - 1, -dp)) {
-                dryad.push({temp: tempDryAdiabat(press, t0, p0), press: press});
+                dryad.push({temp: tempDryAdiabat(press, t0, basep), press: press});
             }
             dryadiabats.push(dryad);
         }

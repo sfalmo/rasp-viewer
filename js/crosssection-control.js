@@ -12,7 +12,7 @@ L.CrosssectionControl = L.Class.extend({
         this.crosssectionButton.title = dict["crosssection"];
         this.crosssectionButton.innerHTML = dict["crosssection"];
         this.crosssectionHelp = L.DomUtil.create('div', '', crosssectionDiv);
-        this.crosssectionButton.onclick = () => { this.toggleSelector(); };
+        this.crosssectionButton.onclick = () => { this.toggle(); };
         this.crosssectionStatus = L.DomUtil.create('div', 'text-danger', crosssectionDiv);
         this._raspControl.on('modelDayChange', () => { this.update(); });
         this._raspControl.on('timeChange', () => { this.update(); });
@@ -24,6 +24,7 @@ L.CrosssectionControl = L.Class.extend({
             return;
         }
         this._raspControl.closePlot();
+        this._raspControl.disableAllMapSelectors();
         this.isArmed = true;
         this.crosssectionButton.classList.add("active");
         this.crosssectionHelp.innerHTML = dict["crosssectionHelp"];
@@ -40,17 +41,17 @@ L.CrosssectionControl = L.Class.extend({
         this.crosssectionStatus.innerHTML = "";
         this._map._container.style.cursor = "";
         this._map.off('click', this._addPoint, this);
-        this._removePoints();
+        this.clear();
         this._raspControl.closePlot();
     },
-    toggleSelector: function() {
+    toggle: function() {
         if (this.isArmed) {
             this.disable();
         } else {
             this.enable();
         }
     },
-    _removePoints: function() {
+    clear: function() {
         this.points.forEach(marker => marker.remove());
         this.points = [];
         if (this.line) {
@@ -60,7 +61,7 @@ L.CrosssectionControl = L.Class.extend({
     },
     _addPoint: function(e) {
         if (this.points.length == 2) {
-            this._removePoints();
+            this.clear();
         }
         var marker = L.marker(e.latlng, {draggable: true}).addTo(this._map)
             .on('moveend', () => { this.update(); });
@@ -118,6 +119,11 @@ L.CrosssectionControl = L.Class.extend({
                         zmax: 250,
                         zsmooth: 'best',
                         colorscale: colorscale,
+                        colorbar: {
+                            outlinewidth: 0,
+                            tickvals: [-250, 0, 250],
+                            title: "cm/s"
+                        },
                         hovertemplate: '%{y:.0f}m, %{z}cm/s<extra></extra>'
                     },
                     {

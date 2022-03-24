@@ -112,8 +112,8 @@ L.Control.RASPControl = L.Control.extend({
         this.crosssectionControl = crosssectionControl(this);
         this.soundingControl = soundingControl(this);
 
-        var miscControls = L.DomUtil.create('div', 'row align-items-center', this._raspPanel);
-        var opacityDiv = L.DomUtil.create('div', 'col-auto btn-group', miscControls);
+        var miscControls = L.DomUtil.create('div', 'd-flex align-items-center', this._raspPanel);
+        var opacityDiv = L.DomUtil.create('div', 'btn-group', miscControls);
         var opacityDownButton = L.DomUtil.create('button', 'btn btn-sm btn-outline-secondary', opacityDiv);
         opacityDownButton.onclick = () => { this.raspLayer.opacityDown(); };
         opacityDownButton.title = dict["opacityDecreaseButton_title"];
@@ -126,7 +126,7 @@ L.Control.RASPControl = L.Control.extend({
         opacityUpButton.title = dict["opacityIncreaseButton_title"];
         opacityUpButton.innerHTML = "+";
 
-        var meteogramDiv = L.DomUtil.create('div', 'col-auto', miscControls);
+        var meteogramDiv = L.DomUtil.create('div', 'ms-4', miscControls);
         var meteogramLabel = L.DomUtil.create('label', '', meteogramDiv);
         meteogramLabel.title = dict["meteogramCheckbox_label"];
         this.meteogramCheckbox = L.DomUtil.create('input', 'me-1', meteogramLabel);
@@ -324,12 +324,16 @@ L.Control.RASPControl = L.Control.extend({
             this.meteogramOverlay.remove();
         }
     },
+    disableAllMapSelectors: function() {
+        this.crosssectionControl.disable();
+        this.soundingControl.disable();
+    },
     closePlot: function() {
         this.plot.style.display = "none";
         this._map.invalidateSize();
         this.currentPlot = null;
-        this.crosssectionControl.disable();
-        this.soundingControl.disable();
+        this.crosssectionControl.clear();
+        this.soundingControl.clear();
     },
     updatePlot: function() {
         this.plot.style.display = "";

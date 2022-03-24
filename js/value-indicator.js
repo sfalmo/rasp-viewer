@@ -11,6 +11,7 @@ L.Control.ValueIndicator = L.Control.extend({
         this.scaleCanvasContainer = scale.getElementsByClassName("scaleColorbar")[0];
         this.scaleMin = scale.getElementsByClassName("scaleMin")[0];
         this.scaleIndicator = this.scaleCanvasContainer.getElementsByClassName("scaleIndicator")[0];
+        this.hideScaleIndicator();
     },
     onAdd: function (map) {
         this._container = L.DomUtil.create('div', 'leaflet-control-attribution bg-light user-select-none');
