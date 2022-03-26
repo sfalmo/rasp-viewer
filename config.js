@@ -4,6 +4,9 @@ const cModels = {
         "description": "TIR 2km",
         "center":   ["50", "12"],
         "resolution": 2, // in km
+        "days": [-1, 0, 1],
+        "hours": ["0800", "0900", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000"],
+        "timezone": "Europe/Berlin",
         "zoom": 7,
         "parameters": [
             // Thermal
@@ -59,9 +62,7 @@ const cModels = {
             "sfcshf",
             "blicw",
             "blcwbase",
-        ],
-        "days": [-1, 0, 1],
-        "hours": ["0800", "0900", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000"]
+        ]
     }
 };
 

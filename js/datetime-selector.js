@@ -1,4 +1,5 @@
 import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
+import { DateTime } from 'luxon';
 
 L.Control.DatetimeSelector = L.Control.extend({
     options: {
@@ -53,27 +54,27 @@ L.Control.DatetimeSelector = L.Control.extend({
     get: function() {
         var {modelKey, runDate, validDate, day} = JSON.parse(this.modelDaySelect.value);
         var dir = modelKey + "/" + runDate + "/" + day;
-        return {model: modelKey, runDate: runDate, validDate: validDate, day: day, dir: dir, time: this.timeSelect.value};
+        var time = this.timeSelect.value;
+        var datetimeUTC = DateTime.fromISO(`${validDate}T${time.slice(0,2)}:${time.slice(2,4)}`, { zone: cModels[modelKey].timezone }).toUTC().toISO();
+        return {model: modelKey, runDate: runDate, validDate: validDate, day: day, dir: dir, time: time, datetimeUTC: datetimeUTC};
     },
     findLatestRun: function(modelDay) {
         var {modelKey, day} = modelDay;
         var model = cModels[modelKey];
-        var today = new Date();
-        var validDate = new Date();
-        validDate.setDate(today.getDate() + day);
+        var today = DateTime.now().setZone(model.timezone);
+        var validDate = today.plus({ days: day });
         function fetchRecursive(runDate, day) {
             if (day > Math.max(...model.days, model.days.length)) {
                 return undefined;
             }
-            var logDir = cDefaults.forecastServerResults + "/LOG/" + modelKey + "/" + runDate.toLocaleDateString('en-CA') + "/" + day;
+            var logDir = cDefaults.forecastServerResults + "/LOG/" + modelKey + "/" + runDate.toISODate() + "/" + day;
             return fetch(logDir + "/wrf.out")
                 .then(response => {
                     if (response.ok) {
                         return {modelKey: modelKey, validDate: validDate, runDate: runDate, day: day};
                     } else {
-                        runDate.setDate(runDate.getDate() - 1);
                         day += 1;
-                        return fetchRecursive(runDate, day);
+                        return fetchRecursive(runDate.minus({ days: 1 }), day);
                     }
                 });
         };
@@ -97,11 +98,11 @@ L.Control.DatetimeSelector = L.Control.extend({
                         continue;
                     }
                     var {modelKey, runDate, validDate, day} = r;
-                    var description = validDate.toLocaleDateString();
-                    var selectValue = {modelKey: modelKey, runDate: runDate.toLocaleDateString('en-CA'), validDate: validDate.toLocaleDateString('en-CA'), day: day};
+                    var description = validDate.toLocaleString(DateTime.DATE_SHORT);
+                    var selectValue = {modelKey: modelKey, runDate: runDate.toISODate(), validDate: validDate.toISODate(), day: day};
                     this.modelDaySelect.add(new Option(description, JSON.stringify(selectValue)));
-                    var today = new Date();
-                    if (validDate.toDateString() == today.toDateString()) {
+                    var today = DateTime.now().setZone(cModels[modelKey].timezone);
+                    if (validDate.toISODate() == today.toISODate()) {
                         this.modelDaySelect[this.modelDaySelect.length - 1].selected = "selected";
                     }
                 }

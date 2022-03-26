@@ -41,10 +41,9 @@ def application(environ, start_response):
     model = q["model"]
     run_date = q["run_date"]
     day = int(q["day"])
-    valid_date = datetime.strftime(datetime.strptime(run_date, "%Y-%m-%d") + timedelta(days=day), "%Y-%m-%d")
-    time = q["time"]
+    valid_date, time = q["datetimeUTC"].split("T")
     hour = time[:2]
-    minute = time[2:]
+    minute = time[3:5]
     lat_start = float(q["lat_start"])
     lon_start = float(q["lon_start"])
     lat_end = float(q["lat_end"])

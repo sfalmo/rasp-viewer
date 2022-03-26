@@ -63,10 +63,10 @@ L.SoundingControl = L.Class.extend({
         this.update();
     },
     update: function() {
-        var {model, runDate, validDate, day, dir, time} = this._raspControl.datetimeSelector.get();
+        var {model, runDate, validDate, day, dir, time, datetimeUTC} = this._raspControl.datetimeSelector.get();
         var {lat, lng} = this.point.getLatLng();
         this.soundingStatus.innerHTML = "";
-        fetch(`sounding?model=${model}&run_date=${runDate}&day=${day}&time=${time}&lat=${lat}&lon=${lng}`)
+        fetch(`sounding?model=${model}&run_date=${runDate}&day=${day}&datetimeUTC=${datetimeUTC}&lat=${lat}&lon=${lng}`)
             .then(response => {
                 if (response.ok) {
                     return response.json();
