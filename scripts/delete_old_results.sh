@@ -11,7 +11,7 @@ REGION=$2
 folderdays=$3
 wrfoutdays=$4
 
-find "$resultsdir/OUT/$REGION" -mindepth 1 -type d -daystart -mtime "+$folderdays" -delete
-find "$resultsdir/LOG/$REGION" -mindepth 1 -type d -daystart -mtime "+$folderdays" -delete
+find "$resultsdir/OUT/$REGION" -mindepth 1 -maxdepth 1 -type d -daystart -mtime "+$folderdays" -exec rm -r {} +
+find "$resultsdir/LOG/$REGION" -mindepth 1 -maxdepth 1 -type d -daystart -mtime "+$folderdays" -exec rm -r {} +
 
-find "$resultsdir/OUT/$REGION" -mindepth 1 -type f -name "wrfout_d*" -daystart -mtime "+$wrfoutdays" -delete
+find "$resultsdir/OUT/$REGION" -name "wrfout_d*" -type f -daystart -mtime "+$wrfoutdays" -delete
