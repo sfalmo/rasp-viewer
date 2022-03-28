@@ -4,7 +4,6 @@ if (localStorage.getItem("lang") == "en") {
     document.write("<script src='lang/de.js'></script>");
 }
 
-function translate() {
-    document.documentElement.lang = lang;
-    document.title = dict["forecastTitle"];
+function dict(key) {
+    return loadedDict[key] ? loadedDict[key] : key;
 }

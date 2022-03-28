@@ -17,7 +17,7 @@ L.Control.DatetimeSelector = L.Control.extend({
         var modelDayTimeDiv = L.DomUtil.create('div', 'd-flex justify-content-center', this._container);
         var modelDayGroup = L.DomUtil.create('div', '', modelDayTimeDiv);
         this.modelDaySelect = L.DomUtil.create('select', 'form-select w-auto', modelDayGroup);
-        this.modelDaySelect.title = dict["modelDaySelect_title"];
+        this.modelDaySelect.title = dict("modelDaySelect_title");
         this.modelDaySelect.onchange = () => {
             this.doHours();
             var data = this.get();
@@ -40,7 +40,7 @@ L.Control.DatetimeSelector = L.Control.extend({
             var event = new CustomEvent('timeChange', { detail: data });
             this._raspControl.dispatchEvent(event);
         };
-        this.timeSelect.title = dict["timeSelect_title"];
+        this.timeSelect.title = dict("timeSelect_title");
         this.timeNextButton = L.DomUtil.create('button', 'btn btn-outline-secondary', timeGroup);
         this.timeNextButton.innerHTML = '►';
         this.timeNextButton.onclick = () => {
@@ -82,8 +82,8 @@ L.Control.DatetimeSelector = L.Control.extend({
         return fetchRecursive(today, day);
     },
     init: function() {
-        const dayNames = [dict["Sunday"], dict["Monday"], dict["Tuesday"], dict["Wednesday"], dict["Thursday"], dict["Friday"], dict["Saturday"]];
-        const monthNames = ["Jan", "Feb", dict["Mar"], "Apr", dict["May"], "Jun", "Jul", "Aug", "Sep", dict["Oct"], "Nov", dict["Dec"]];
+        const dayNames = [dict("Sunday"), dict("Monday"), dict("Tuesday"), dict("Wednesday"), dict("Thursday"), dict("Friday"), dict("Saturday")];
+        const monthNames = ["Jan", "Feb", dict("Mar"), "Apr", dict("May"), "Jun", "Jul", "Aug", "Sep", dict("Oct"), "Nov", dict("Dec")];
         var modelDayList = [];
         for (const modelKey of Object.keys(cModels)) {
             var model = cModels[modelKey];

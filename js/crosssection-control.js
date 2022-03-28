@@ -9,8 +9,8 @@ L.CrosssectionControl = L.Class.extend({
         var raspPanel = raspControl._raspPanel;
         var crosssectionDiv = L.DomUtil.create('div', 'mb-2', raspPanel);
         this.crosssectionButton = L.DomUtil.create('button', 'btn btn-outline-primary mb-1', crosssectionDiv);
-        this.crosssectionButton.title = dict["crosssection"];
-        this.crosssectionButton.innerHTML = dict["crosssection"];
+        this.crosssectionButton.title = dict("crosssection");
+        this.crosssectionButton.innerHTML = dict("crosssection");
         this.crosssectionHelp = L.DomUtil.create('div', '', crosssectionDiv);
         this.crosssectionButton.onclick = () => { this.toggle(); };
         this.crosssectionStatus = L.DomUtil.create('div', 'text-danger', crosssectionDiv);
@@ -27,7 +27,7 @@ L.CrosssectionControl = L.Class.extend({
         this._raspControl.disableAllMapSelectors();
         this.isArmed = true;
         this.crosssectionButton.classList.add("active");
-        this.crosssectionHelp.innerHTML = dict["crosssectionHelp"];
+        this.crosssectionHelp.innerHTML = dict("crosssectionHelp");
         this._map._container.style.cursor = "crosshair";
         this._map.on('click', this._addPoint, this);
     },
@@ -161,7 +161,7 @@ L.CrosssectionControl = L.Class.extend({
                 Plotly.newPlot('plotContent', plotlyData, plotlyLayout, {displayModeBar: false, responsive: true});
             })
             .catch(err => {
-                this.crosssectionStatus.innerHTML = dict[err.message] ? dict[err.message] : err.message;
+                this.crosssectionStatus.innerHTML = dict(err.message);
             })
             .finally(() => {
                 this._raspControl.loadingPlot = false;

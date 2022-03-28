@@ -3,6 +3,10 @@ import { cModels , cLayers , cDefaults } from './config.js';
 import aufwindeAttribution from './js/aufwinde-attribution.js';
 import raspControl from './js/rasp-control.js';
 
+
+document.documentElement.lang = lang;
+document.title = dict("forecastTitle");
+
 // Create the map
 var map = L.map('map', {
     center: cModels[cDefaults.model].center,

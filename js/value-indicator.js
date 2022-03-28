@@ -21,7 +21,7 @@ L.Control.ValueIndicator = L.Control.extend({
     },
     updateParameter: function (parameter) {
         this._parameter.style.color = parameter ? 'black' : 'red';
-        this._parameter.innerHTML = parameter ? parameter : dict["dataMissing"];
+        this._parameter.innerHTML = parameter ? parameter : dict("dataMissing");
     },
     updateValue: function (value) {
         if (value) {

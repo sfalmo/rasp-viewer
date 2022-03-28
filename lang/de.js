@@ -1,6 +1,6 @@
 var lang = "de";
 
-var dict = {
+var loadedDict = {
     "forecastTitle": "aufwin.de | Vorhersage",
     "legalNotice": "Impressum",
     "privacyPolicy": "Datenschutz",
@@ -21,11 +21,11 @@ var dict = {
     "opacityIncreaseButton_title": "Deckkraft erhöhen",
     "soundingCheckbox_label": "Orte mit Vertikalprofilen (Temps) auf Karte anzeigen",
     "meteogramCheckbox_label": "Orte mit Meteogrammen auf Karte anzeigen",
-    "crosssection": "Vertikalquerschnitt",
-    "crosssectionHelp": "Auf der Karte zwei mal klicken, um Start- und Endpunkt des Vertikalquerschnittes auszuwählen. Zum Deaktivieren des Querschnitts-Tools die obige Schaltfläche nochmals drücken.",
+    "crosssection": "Querschnitt",
+    "crosssectionHelp": "Mit diesem Werkzeug kann ein Querschnitt der Vertikalbewegung erstellt werden. Dazu auf der Karte zwei mal klicken, um Start- und Endpunkt auszuwählen. Zum Deaktivieren des Querschnitts-Tools die obige Schaltfläche nochmals drücken.",
     "crosssectionError": "Konnte Vertikalquerschnitt nicht erstellen. Sind Start- und Endpunkt innerhalb des Vorhersagebereiches?",
-    "sounding": "Vertikalprofil",
-    "soundingHelp": "Ort für Vertikalprofil auf der Karte auswählen. Zum Deaktivieren des Vertikalprofil-Tools die obige Schaltfläche nochmals drücken.",
+    "sounding": "Temp",
+    "soundingHelp": "Ort auf der Karte durch Klick auswählen, für den ein Vertikalprofil (Temp) als Skew-T-log-p-Diagramm erstellt wird. Zum Deaktivieren des Temp-Tools die obige Schaltfläche nochmals drücken.",
     "soundingError": "Konnte Vertikalprofil nicht erstellen. Ist der Ort innerhalb des Vorhersagebereiches?",
     "Topography": "Topografie",
     "Grayscale": "Graustufen",

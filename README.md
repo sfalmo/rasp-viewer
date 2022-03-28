@@ -23,3 +23,11 @@ Then, in another terminal, execute `npm run watch`.
 You can now do your programming and a javascript bundle will be built automatically on every change.
 
 To bundle for production, run `npm run build`.
+
+### WSGI scripts
+
+There are some python scripts in `wsgi` which generate useful analysis outputs such as cross sections or soundings dynamically from WRF output files.
+To use them, you have to configure your web server accordingly.
+Refer to the Readme in `wsgi`.
+
+If you do not want to use this feature, comment out the corresponding buttons in the RASP control.

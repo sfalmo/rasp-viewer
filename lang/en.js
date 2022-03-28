@@ -1,6 +1,6 @@
 var lang = "en";
 
-var dict = {
+var loadedDict = {
     "forecastTitle": "aufwin.de | Forecast",
     "legalNotice": "Legal Notice",
     "privacyPolicy": "Privacy Policy",
@@ -22,10 +22,10 @@ var dict = {
     "soundingCheckbox_label": "Show sounding locations on map",
     "meteogramCheckbox_label": "Show meteogram locations on map",
     "crosssection": "Cross Section",
-    "crosssectionHelp": "Click twice on the map to select the start and end point of the cross section. Press the above button again to deactivate the cross section tool.",
+    "crosssectionHelp": "This tool lets you create a cross section of the vertical motion. Click twice on the map to select the start and end point. Press the above button again to deactivate the cross section tool.",
     "crosssectionError": "Could not create cross section. Make sure that start and end point are inside the forecast domain.",
     "sounding": "Sounding",
-    "soundingHelp": "Click on the map to show a sounding diagram for this location. Press the above button again to deactivate the sounding tool.",
+    "soundingHelp": "Click on the map to select a location for which a sounding profile is created as a skew-T log-p diagram. Press the above button again to deactivate the sounding tool.",
     "soundingError": "Could not create sounding. Make sure that the point is inside the forecast domain.",
     "Topography": "Topography",
     "Grayscale": "Grayscale",

@@ -38,7 +38,7 @@ L.Control.RASPControl = L.Control.extend({
                 this.modelDayChange();
             })
             .catch(() => {
-                this.validIndicator.update(dict["dataMissing"], false);
+                this.validIndicator.update(dict("dataMissing"), false);
             });
 
         this.on('modelDayChange', () => { this.modelDayChange(); });
@@ -90,7 +90,7 @@ L.Control.RASPControl = L.Control.extend({
             catRadio.value = category;
             catLabel.style.cursor = "pointer";
             catLabel.innerHTML += `<svg viewBox="0 0 12 12" class="parameterCategoryIcon"><use xlink:href="img/sprites.svg#${category}"></use></svg>`;
-            catLabel.title = dict["parameterCategory_" + category + "_title"];
+            catLabel.title = dict("parameterCategory_" + category + "_title");
             catRadio.id = catLabel.title;
             catLabel.htmlFor = catRadio.id;
             if (category == defaultCategory) { // enable the default category
@@ -101,11 +101,11 @@ L.Control.RASPControl = L.Control.extend({
         this.parameterCategoryDescription = L.DomUtil.create('div', '', parameterDiv);
         this.parameterSelect = L.DomUtil.create('select', 'form-select form-select-sm fw-bold my-1', parameterDiv);
         this.parameterSelect.onchange = () => { this.parameterChange(); };
-        this.parameterSelect.title = dict["parameterSelect_title"];
+        this.parameterSelect.title = dict("parameterSelect_title");
         var parameterDetails = L.DomUtil.create('details', '', parameterDiv);
         var parameterSummary = L.DomUtil.create('summary', '', parameterDetails);
-        parameterSummary.title = dict["parameterDetails_title"];
-        parameterSummary.innerHTML = dict["parameterDetails_summary"];
+        parameterSummary.title = dict("parameterDetails_title");
+        parameterSummary.innerHTML = dict("parameterDetails_summary");
         this.parameterDescription = L.DomUtil.create('span', 'parameterDescription', parameterDetails);
 
         this.crosssectionControl = crosssectionControl(this);
@@ -115,24 +115,24 @@ L.Control.RASPControl = L.Control.extend({
         var opacityDiv = L.DomUtil.create('div', 'btn-group', miscControls);
         var opacityDownButton = L.DomUtil.create('button', 'btn btn-sm btn-outline-secondary', opacityDiv);
         opacityDownButton.onclick = () => { this.raspLayer.opacityDown(); };
-        opacityDownButton.title = dict["opacityDecreaseButton_title"];
+        opacityDownButton.title = dict("opacityDecreaseButton_title");
         opacityDownButton.innerHTML = "−";
         var opacityIcon = L.DomUtil.create('span', 'btn btn-sm btn-outline-secondary disabled', opacityDiv);
         var opacityIconImg = L.DomUtil.create('img', 'icon', opacityIcon);
         opacityIconImg.src = 'img/opacity.svg';
         var opacityUpButton = L.DomUtil.create('button', 'btn btn-sm btn-outline-secondary', opacityDiv);
         opacityUpButton.onclick = () => { this.raspLayer.opacityUp(); };
-        opacityUpButton.title = dict["opacityIncreaseButton_title"];
+        opacityUpButton.title = dict("opacityIncreaseButton_title");
         opacityUpButton.innerHTML = "+";
 
         var meteogramDiv = L.DomUtil.create('div', 'ms-4', miscControls);
         var meteogramLabel = L.DomUtil.create('label', '', meteogramDiv);
-        meteogramLabel.title = dict["meteogramCheckbox_label"];
+        meteogramLabel.title = dict("meteogramCheckbox_label");
         this.meteogramCheckbox = L.DomUtil.create('input', 'me-1', meteogramLabel);
         this.meteogramCheckbox.type = 'checkbox';
         this.meteogramCheckbox.onchange = () => { this.toggleMeteograms(); };
         var meteogramText = L.DomUtil.create('span', '', meteogramLabel);
-        meteogramText.innerHTML = dict["Meteograms"];
+        meteogramText.innerHTML = dict("Meteograms");
 
         this._collapseLink = L.DomUtil.create('a', 'leaflet-control-collapse-button', this._raspPanel);
         this._collapseLink.innerHTML = '⇱';
@@ -228,7 +228,7 @@ L.Control.RASPControl = L.Control.extend({
     },
     parameterCategoryChange: function() {
         var category = this.getParameterCategory();
-        this.parameterCategoryDescription.innerHTML = dict["parameterCategory_" + category + "_title"];
+        this.parameterCategoryDescription.innerHTML = dict("parameterCategory_" + category + "_title");
         this.doParameterList();
         this.parameterChange();
     },
@@ -271,12 +271,12 @@ L.Control.RASPControl = L.Control.extend({
             .then(validJson => {
                 var validDateText = `${validJson["year"]}-${validJson["month"]}-${validJson["day"]}`;
                 var runDateText = this.datetimeSelector.get().runDate;
-                var timezone = dict[validJson["timezone"]] ? dict[validJson["timezone"]] : validJson["timezone"];
+                var timezone = dict(validJson["timezone"]);
                 var validTimestamp = `${validDateText} ${validJson["validLocal"]} ${timezone} (${validJson["validZulu"]}Z)`;
-                this.validIndicator.update(`${dict["Model run"]} ${runDateText} ${validJson["fcstZulu"]}Z ${dict["for"]} ${validTimestamp}`, true);
+                this.validIndicator.update(`${dict("Model run")} ${runDateText} ${validJson["fcstZulu"]}Z ${dict("for")} ${validTimestamp}`, true);
             })
             .catch(err => {
-                this.validIndicator.update(dict[err.message] ? dict[err.message] : err.message, false);
+                this.validIndicator.update(dict(err.message), false);
             })
             .finally(() => {
                 this.loadingMeta = false;

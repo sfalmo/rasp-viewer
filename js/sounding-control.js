@@ -7,8 +7,8 @@ L.SoundingControl = L.Class.extend({
         var raspPanel = raspControl._raspPanel;
         var soundingDiv = L.DomUtil.create('div', 'mb-2', raspPanel);
         this.soundingButton = L.DomUtil.create('button', 'btn btn-outline-primary mb-1', soundingDiv);
-        this.soundingButton.title = dict["sounding"];
-        this.soundingButton.innerHTML = dict["sounding"];
+        this.soundingButton.title = dict("sounding");
+        this.soundingButton.innerHTML = dict("sounding");
         this.soundingHelp = L.DomUtil.create('div', '', soundingDiv);
         this.soundingButton.onclick = () => { this.toggle(); };
         this.soundingStatus = L.DomUtil.create('div', 'text-danger', soundingDiv);
@@ -25,7 +25,7 @@ L.SoundingControl = L.Class.extend({
         this._raspControl.disableAllMapSelectors();
         this.isArmed = true;
         this.soundingButton.classList.add("active");
-        this.soundingHelp.innerHTML = dict["soundingHelp"];
+        this.soundingHelp.innerHTML = dict("soundingHelp");
         this._map._container.style.cursor = "crosshair";
         this._map.on('click', this._selectPoint, this);
     },
@@ -63,7 +63,7 @@ L.SoundingControl = L.Class.extend({
         this.update();
     },
     update: function() {
-        if (!this.isArmed || !this.points) {
+        if (!this.isArmed || !this.point) {
             return;
         }
         var {model, runDate, validDate, day, dir, time, datetimeUTC} = this._raspControl.datetimeSelector.get();
@@ -84,7 +84,7 @@ L.SoundingControl = L.Class.extend({
                 skewt.plot(soundingJson);
             })
             .catch(err => {
-                this.soundingStatus.innerHTML = dict[err.message] ? dict[err.message] : err.message;
+                this.soundingStatus.innerHTML = dict(err.message);
             })
             .finally(() => {
                 this._raspControl.loadingPlot = false;
