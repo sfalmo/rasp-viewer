@@ -1,8 +1,5 @@
-from datetime import datetime, timedelta
-import wrf
 import netCDF4 as nc
-import numpy as np
-import matplotlib.pyplot as plt
+import wrf
 
 
 def sounding(wrf_filename, lat, lon, hmax=None):
@@ -15,7 +12,7 @@ def sounding(wrf_filename, lat, lon, hmax=None):
     data = {}
     # GSD Sounding
     data["press"] = wrf.getvar(wrf_file, "pressure", meta=False)[:, x, y]
-    data["hght"] = wrf.getvar(wrf_file, "z", meta=False)[:, x, y]
+    data["hght"] = wrf.getvar(wrf_file, "height", meta=False)[:, x, y]
     data["temp"] = wrf.getvar(wrf_file, "tc", meta=False)[:, x, y]
     data["dwpt"] = wrf.getvar(wrf_file, "td", meta=False)[:, x, y]
     data["wspd"], data["wdir"] = wrf.getvar(wrf_file, "uvmet_wspd_wdir", meta=False)[:, :, x, y]
@@ -64,5 +61,5 @@ def application(environ, start_response):
 
 # For testing
 if __name__ == "__main__":
-    sounding_data = sounding("../../results/OUT/TIR/2022-03-23/0/wrfout_d02_2022-03-23_13:00:00", 50, 12)
+    sounding_data = sounding("../../results/OUT/TIR/2022-03-27/0/wrfout_d02_2022-03-27_13:00:00", 50, 12)
     print(sounding_data)

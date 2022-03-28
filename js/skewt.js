@@ -193,7 +193,6 @@ var SkewT = function(div) {
             }
             isohumes.push(isoh);
         }
-        console.log(isohumes);
 
         // Draw dry adiabats
         skewtbg.selectAll("dryadiabatline")

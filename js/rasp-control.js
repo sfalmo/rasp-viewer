@@ -74,9 +74,8 @@ L.Control.RASPControl = L.Control.extend({
             L.DomEvent.on(this._link, 'focus', this.expand, this);
         }
         this.expand();
-        L.DomEvent.on(this._container, 'mousemove', L.DomEvent.stop);
-        L.DomEvent.disableClickPropagation(this._container);
-        L.DomEvent.disableScrollPropagation(this._container);
+		    L.DomEvent.disableClickPropagation(this._container);
+		    L.DomEvent.disableScrollPropagation(this._container);
         this._raspPanel = L.DomUtil.create('div', "leaflet-control-layers-list", this._container);
 
         var parameterDiv = L.DomUtil.create('div', 'mb-2', this._raspPanel);
@@ -272,7 +271,7 @@ L.Control.RASPControl = L.Control.extend({
             .then(validJson => {
                 var validDateText = `${validJson["year"]}-${validJson["month"]}-${validJson["day"]}`;
                 var runDateText = this.datetimeSelector.get().runDate;
-                var timezone = dict[validJson["timezone"]];
+                var timezone = dict[validJson["timezone"]] ? dict[validJson["timezone"]] : validJson["timezone"];
                 var validTimestamp = `${validDateText} ${validJson["validLocal"]} ${timezone} (${validJson["validZulu"]}Z)`;
                 this.validIndicator.update(`${dict["Model run"]} ${runDateText} ${validJson["fcstZulu"]}Z ${dict["for"]} ${validTimestamp}`, true);
             })

@@ -13,6 +13,7 @@ L.Control.DatetimeSelector = L.Control.extend({
         this._container.style.backgroundColor = "rgba(255, 255, 255, 0)";
         this._container.style.borderStyle = "none";
         L.DomEvent.disableClickPropagation(this._container);
+		    L.DomEvent.disableScrollPropagation(this._container);
         var modelDayTimeDiv = L.DomUtil.create('div', 'd-flex justify-content-center', this._container);
         var modelDayGroup = L.DomUtil.create('div', '', modelDayTimeDiv);
         this.modelDaySelect = L.DomUtil.create('select', 'form-select w-auto', modelDayGroup);

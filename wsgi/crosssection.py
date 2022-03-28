@@ -1,8 +1,6 @@
-from datetime import datetime, timedelta
-import numpy as np
-import matplotlib.pyplot as plt
 import netCDF4 as nc
 import wrf
+import numpy as np
 
 
 def crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax=None, dh=None):
@@ -70,7 +68,8 @@ def application(environ, start_response):
 
 # For testing
 if __name__ == "__main__":
-    levels, terrain, cross = crosssection("../../results/OUT/TIR/2022-03-22/0/wrfout_d02_2022-03-22_13:00:00", 50.3620, 13.0446, 50.7082, 15.74439)
+    import matplotlib.pyplot as plt
+    levels, terrain, cross = crosssection("../../results/OUT/TIR/2022-03-27/0/wrfout_d02_2022-03-27_13:00:00", 49, 11, 51, 13)
     fig, ax = plt.subplots()
     ax.plot(terrain)
     ax.pcolormesh(np.arange(0, cross.shape[1]), levels, cross)

@@ -63,6 +63,9 @@ L.SoundingControl = L.Class.extend({
         this.update();
     },
     update: function() {
+        if (!this.isArmed || !this.points) {
+            return;
+        }
         var {model, runDate, validDate, day, dir, time, datetimeUTC} = this._raspControl.datetimeSelector.get();
         var {lat, lng} = this.point.getLatLng();
         this.soundingStatus.innerHTML = "";
