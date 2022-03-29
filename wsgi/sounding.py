@@ -4,7 +4,7 @@ import wrf
 
 def sounding(wrf_filename, lat, lon, hmax=None):
     if hmax is None:
-        hmax = 10000
+        hmax = 12000
 
     wrf_file = nc.Dataset(wrf_filename)
     x, y = wrf.ll_to_xy(wrf_file, lat, lon)

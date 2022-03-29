@@ -68,9 +68,9 @@ var SkewT = function(div) {
     var data = [];
     var unit = "m/s"; // or kmh
 
-    var svg = wrapper.append("svg").attr("id", "svg");	 //main svg
-    var container = svg.append("g").attr("id", "container"); //container
-    var skewtbg = container.append("g").attr("id", "skewtbg");//background
+    var svg = wrapper.append("svg").attr("id", "svg"); // main svg
+    var container = svg.append("g").attr("id", "container"); // container
+    var skewtbg = container.append("g").attr("id", "skewtbg"); // background
     var skewtgroup = container.append("g"); // put skewt lines in this group
     var barbgroup = container.append("g")
         .style("stroke", "#000")
@@ -284,19 +284,20 @@ var SkewT = function(div) {
 
     var drawToolTips = function(skewtlines) {
         var lines = skewtlines.reverse();
+        var tooltipgroup = skewtgroup.append("g").style("display", "none").attr("clip-path", "url(#clipper)");
         // Draw tooltips
-        var tmpcfocus = skewtgroup.append("g").style("fill", "red").style("stroke", "none").style("display", "none");
+        var tmpcfocus = tooltipgroup.append("g").style("fill", "red").style("stroke", "none");
         tmpcfocus.append("circle").attr("r", 4);
         tmpcfocus.append("text").attr("x", 9).attr("dy", ".35em");
 
-        var dwpcfocus = skewtgroup.append("g").style("fill", "blue").style("stroke", "none").style("display", "none");
+        var dwpcfocus = tooltipgroup.append("g").style("fill", "blue").style("stroke", "none");
         dwpcfocus.append("circle").attr("r", 4);
         dwpcfocus.append("text").attr("x", -9).attr("text-anchor", "end").attr("dy", ".35em");
 
-        var hghtfocus = skewtgroup.append("g").style("display", "none");
+        var hghtfocus = tooltipgroup.append("g");
         hghtfocus.append("text").attr("x", 0).attr("text-anchor", "start").attr("dy", ".35em");
 
-        var wspdfocus = skewtgroup.append("g").style("display", "none");
+        var wspdfocus = tooltipgroup.append("g");
         wspdfocus.append("text").attr("x", 0).attr("text-anchor", "start").attr("dy", ".35em");
 
         container.append("rect")
@@ -304,8 +305,8 @@ var SkewT = function(div) {
             .style("pointer-events", "all")
             .attr("width", w)
             .attr("height", h)
-            .on("mouseover", function() { tmpcfocus.style("display", null); dwpcfocus.style("display", null); hghtfocus.style("display", null); wspdfocus.style("display", null);})
-            .on("mouseout", function() { tmpcfocus.style("display", "none"); dwpcfocus.style("display", "none"); hghtfocus.style("display", "none"); wspdfocus.style("display", "none");})
+            .on("mouseover", function() { tooltipgroup.style("display", null); })
+            .on("mouseout", function() { tooltipgroup.style("display", "none"); })
             .on("mousemove", function (event, datum) {
                 var y0 = y.invert(d3.pointer(event)[1]); // get y value of mouse pointer in pressure space
                 var i = bisectTemp(lines, y0, 1, lines.length-1);
@@ -314,10 +315,10 @@ var SkewT = function(div) {
                 var d = y0 - d0.press > d1.press - y0 ? d1 : d0;
                 tmpcfocus.attr("transform", "translate(" + skewx(d.temp, d.press) + "," + y(d.press) + ")");
                 dwpcfocus.attr("transform", "translate(" + skewx(d.dwpt, d.press)+ "," + y(d.press) + ")");
-                hghtfocus.attr("transform", "translate(0," + y(d.press) + ")");
+                hghtfocus.attr("transform", "translate(5," + y(d.press) + ")");
                 tmpcfocus.select("text").text(Math.round(d.temp)+"°C");
                 dwpcfocus.select("text").text(Math.round(d.dwpt)+"°C");
-                hghtfocus.select("text").text("- "+Math.round(d.hght)+" m");
+                hghtfocus.select("text").text(Math.round(d.hght)+" m");
                 wspdfocus.attr("transform", "translate(" + (w-60)  + "," + y(d.press) + ")");
                 wspdfocus.select("text").text(Math.round(convert(d.wspd, unit)) + " " + unit);
             });
