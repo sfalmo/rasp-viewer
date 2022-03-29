@@ -54,7 +54,7 @@ var SkewT = function(div) {
     var wrapper = d3.select(div);
     var width = parseInt(wrapper.style('width'), 10);
     var height = width; //tofix
-    var margin = {top: 10, right: 50, bottom: 20, left: 40}; //container margins
+    var margin = {top: 20, right: 50, bottom: 20, left: 40}; //container margins
     var deg2rad = (Math.PI/180);
     var basep = 1050;
     var topp = 250;
@@ -64,7 +64,7 @@ var SkewT = function(div) {
     var r = d3.scaleLinear().range([0,300]).domain([0,150]);
     var y2 = d3.scaleLinear();
     var bisectTemp = d3.bisector(function(d) { return d.press; }).left; // bisector function for tooltips
-    var w, h, tan, x, y, xAxis, yAxis;
+    var w, h, tan, x, y, cloudScale, xAxis, yAxis, cloudAxis;
     var data = [];
     var unit = "m/s"; // or kmh
 
@@ -85,8 +85,10 @@ var SkewT = function(div) {
         tan = h / w * 2;
         x = d3.scaleLinear().range([0, w]).domain([-40,40]);
         y = d3.scaleLog().range([0, h]).domain([topp, basep]);
+        cloudScale = d3.scaleLinear().range([0, w/6]).domain([0, 1]);
         xAxis = d3.axisBottom(x).tickSize(0,0).ticks(10);
         yAxis = d3.axisLeft(y).tickSize(0,0).tickValues(plines).tickFormat(d3.format(".0d"));
+        cloudAxis = d3.axisTop(cloudScale).tickSize(0,0).tickValues([0, 0.5, 1]);
     }
 
     function skewx(temp, press) {
@@ -238,6 +240,7 @@ var SkewT = function(div) {
         // Add axes
         skewtbg.append("g").attr("transform", "translate(0," + (h-0.5) + ")").call(xAxis);
         skewtbg.append("g").attr("transform", "translate(-0.5,0)").call(yAxis);
+        skewtbg.append("g").call(cloudAxis);
     };
 
     var makeBarbTemplates = function(){
@@ -354,6 +357,19 @@ var SkewT = function(div) {
             .data(barbs).enter().append("use")
             .attr("xlink:href", function (d) { return "#barb"+Math.round(convert(d.wspd, "kt")/5)*5; }) // 0,5,10,15,... always in kt
             .attr("transform", function(d,i) { return "translate("+w+","+y(d.press)+") rotate("+(d.wdir+180)+")"; });
+
+        var cloudArea = d3.area()
+            .curve(d3.curveMonotoneY)
+            .x0(0)
+            .x1(function(d) { return cloudScale(d.cldfra); })
+            .y(function(d) { return y(d.press); });
+
+        var cloudAreaPlot = skewtgroup.selectAll("cloudarea")
+            .data(skewtlines).enter().append("path")
+            .style("fill", "grey")
+            .style("opacity", "0.5")
+            .attr("clip-path", "url(#clipper)")
+            .attr("d", cloudArea);
 
         //mouse over
         drawToolTips(skewtlines[0]);
