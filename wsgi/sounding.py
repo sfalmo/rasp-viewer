@@ -47,7 +47,7 @@ def application(environ, start_response):
 
     try:
         sounding_data = sounding(wrf_filename, lat, lon, hmax)
-    except ValueError:
+    except (ValueError, IndexError):
         status = "400 Bad Request"
         response_headers = [("Content-type", "text/plain")]
         start_response(status, response_headers)
