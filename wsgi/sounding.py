@@ -7,7 +7,9 @@ def sounding(wrf_filename, lat, lon, hmax=None):
         hmax = 12000
 
     wrf_file = nc.Dataset(wrf_filename)
-    x, y = wrf.ll_to_xy(wrf_file, lat, lon)
+    x, y = wrf.ll_to_xy(wrf_file, lat, lon, meta=False)
+    if x < 0 or y < 0:
+        raise IndexError("x or y out of boundary")
 
     data = {}
     # GSD Sounding
