@@ -162,6 +162,7 @@ L.CrosssectionControl = L.Class.extend({
             })
             .catch(err => {
                 this.crosssectionStatus.innerHTML = dict(err.message);
+                this._raspControl.closePlot();
             })
             .finally(() => {
                 this._raspControl.loadingPlot = false;

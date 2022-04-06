@@ -36,16 +36,22 @@ def application(environ, start_response):
         except ValueError:
             q[item] = None
 
-    model = q["model"]
-    run_date = q["run_date"]
-    day = int(q["day"])
-    valid_date, time = q["datetimeUTC"].split("T")
-    hour = time[:2]
-    minute = time[3:5]
-    lat = float(q["lat"])
-    lon = float(q["lon"])
-    hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else None
-    wrf_filename = environ["DOCUMENT_ROOT"] + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
+    try:
+        model = q["model"]
+        run_date = q["run_date"]
+        day = int(q["day"])
+        valid_date, time = q["datetimeUTC"].split("T")
+        hour = time[:2]
+        minute = time[3:5]
+        lat = float(q["lat"])
+        lon = float(q["lon"])
+        hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else None
+        wrf_filename = environ["DOCUMENT_ROOT"] + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
+    except ValueError:
+        status = "400 Bad Request"
+        response_headers = [("Content-type", "text/plain")]
+        start_response(status, response_headers)
+        return [b"Could not create sounding."]
 
     try:
         sounding_data = sounding(wrf_filename, lat, lon, hmax)

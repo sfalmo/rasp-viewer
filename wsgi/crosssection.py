@@ -10,6 +10,12 @@ def crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax=None
         dh = 200
 
     wrf_file = nc.Dataset(wrf_filename)
+
+    x_start, y_start = wrf.ll_to_xy(wrf_file, lat_start, lon_start, meta=False)
+    x_end, y_end = wrf.ll_to_xy(wrf_file, lat_end, lon_end, meta=False)
+    if x_start < 0 or y_start < 0 or x_end < 0 or y_end < 0:
+        raise IndexError("x or y of start or end point out of boundary")
+
     cross_start = wrf.CoordPair(lat=lat_start, lon=lon_start)
     cross_end = wrf.CoordPair(lat=lat_end, lon=lon_end)
 
@@ -36,23 +42,29 @@ def application(environ, start_response):
         except ValueError:
             q[item] = None
 
-    model = q["model"]
-    run_date = q["run_date"]
-    day = int(q["day"])
-    valid_date, time = q["datetimeUTC"].split("T")
-    hour = time[:2]
-    minute = time[3:5]
-    lat_start = float(q["lat_start"])
-    lon_start = float(q["lon_start"])
-    lat_end = float(q["lat_end"])
-    lon_end = float(q["lon_end"])
-    hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else None
-    dh = float(q["dh"]) if "dh" in q and q["dh"] else None
-    wrf_filename = environ["DOCUMENT_ROOT"] + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
+    try:
+        model = q["model"]
+        run_date = q["run_date"]
+        day = int(q["day"])
+        valid_date, time = q["datetimeUTC"].split("T")
+        hour = time[:2]
+        minute = time[3:5]
+        lat_start = float(q["lat_start"])
+        lon_start = float(q["lon_start"])
+        lat_end = float(q["lat_end"])
+        lon_end = float(q["lon_end"])
+        hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else None
+        dh = float(q["dh"]) if "dh" in q and q["dh"] else None
+        wrf_filename = environ["DOCUMENT_ROOT"] + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
+    except ValueError:
+        status = "400 Bad Request"
+        response_headers = [("Content-type", "text/plain")]
+        start_response(status, response_headers)
+        return [b"Could not create cross section."]
 
     try:
         levels, terrain, cross = crosssection(wrf_filename, lat_start, lon_start, lat_end, lon_end, hmax, dh)
-    except ValueError:
+    except (ValueError, IndexError):
         status = "400 Bad Request"
         response_headers = [("Content-type", "text/plain")]
         start_response(status, response_headers)
