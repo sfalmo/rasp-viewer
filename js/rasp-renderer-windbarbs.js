@@ -13,24 +13,28 @@ L.RaspRendererWindbarbs = L.Class.extend({
         this.data = data;
         this.layerSpeed = layerSpeed;
         this.layerAngle = layerAngle;
-        this.pixelWidth = (this.data.xmax - this.data.xmin) / this.data.width;
-        this.pixelHeight = (this.data.ymax - this.data.ymin) / this.data.height;
         this._doRender();
         this._map.on('zoomend', this._doRender, this);
-        this._map.on('dragend', this._doRender, this);
+        this._map.on('moveend', this._doRender, this);
         this._map.on('resize', this._doRender, this);
     },
     _doRender: function() {
         this.layerGroup.clearLayers();
         this.barbs = [];
-        var stride = Math.ceil(100 * 2**(5.5 + window.innerWidth / 2000 - this._map.getZoom()));
-        var bounds = this._map.getBounds();
-        for (let i = Math.floor(stride / 2); i < this.data.height - Math.floor(stride / 2); i += stride) {
-            for (let j = Math.floor(stride / 2); j < this.data.width - Math.floor(stride / 2); j += stride) {
-                var position = this._getPosition(i, j);
-                if (!bounds.contains(position)) {
+        var mapSize = this._map.getSize();
+        var stride = 120;
+        var margin = Math.round(stride / 2);
+        var xScaleFactor = this.data.width / (this.data.xmax - this.data.xmin);
+        var yScaleFactor = this.data.height / (this.data.ymax - this.data.ymin);
+        for (let xPixel = -margin; xPixel < mapSize.x + margin; xPixel += stride) {
+            for (let yPixel = -margin; yPixel < mapSize.y + margin; yPixel += stride) {
+                var latlng = this._map.containerPointToLatLng([xPixel, yPixel]);
+                var {x, y} = L.CRS.EPSG3857.project(latlng);
+                if (x < this.data.xmin || x > this.data.xmax || y < this.data.ymin || y > this.data.ymax) {
                     continue;
                 }
+                var j = Math.floor((x - this.data.xmin) * xScaleFactor);
+                var i = Math.floor((this.data.ymax - y) * yScaleFactor);
                 var speed = this.data[this.layerSpeed][0][i * this.data.width + j];
                 var angle = this.data[this.layerAngle][0][i * this.data.width + j];
                 if (speed != this.data.noDataValue && angle != this.data.noDataValue) {
@@ -41,7 +45,7 @@ L.RaspRendererWindbarbs = L.Class.extend({
                         iconAnchor: [40, 40],
                         html: L.Util.template(svg)
                     });
-                    this.barbs.push({position: position, icon: divIcon});
+                    this.barbs.push({position: latlng, icon: divIcon});
                 }
             }
         }
@@ -55,11 +59,6 @@ L.RaspRendererWindbarbs = L.Class.extend({
                 }));
             }
         });
-    },
-    _getPosition(i, j) {
-        var x = this.data.xmin + (j + 0.5) * this.pixelWidth;
-        var y = this.data.ymax - (i + 0.5) * this.pixelHeight;
-        return L.CRS.EPSG3857.unproject(L.point(x, y));
     },
     _getFlagSvgPath: function(speed) {
         var ten   = 0;
