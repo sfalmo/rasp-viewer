@@ -6,7 +6,7 @@ L.RaspRendererWindbarbs = L.Class.extend({
     clear: function() {
         this.layerGroup.clearLayers();
         this._map.off('zoomend', this._doRender, this);
-        this._map.off('dragend', this._doRender, this);
+        this._map.off('moveend', this._doRender, this);
         this._map.off('resize', this._doRender, this);
     },
     render: function(data, layerSpeed, layerAngle) {
