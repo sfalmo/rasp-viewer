@@ -205,10 +205,8 @@ const cLayers = {
     },
     // ... and overlays
     overlays: {
-        [dict("Airspace")]: L.tileLayer('https://{s}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{y}.png', {
-            attribution: 'Airspace tiles by <a href="https://www.openaip.net" target="_blank">OpenAip</a>',
-            tms: true,
-            subdomains: '12',
+        [dict("Airspace")]: L.tileLayer('https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png?apiKey=decca790b0f2ea35ecd0534d2385b8b5', {
+            attribution: 'Airspace by <a href="https://www.openaip.net" target="_blank">OpenAip</a>',
             transparent: true,
             opacity: 0.5
         })

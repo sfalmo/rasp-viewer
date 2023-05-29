@@ -82,7 +82,7 @@ L.CrosssectionControl = L.Class.extend({
         }
         this.line = L.polyline([[lat_start, lon_start], [lat_end, lon_end]]).addTo(this._map);
         this.crosssectionStatus.innerHTML = "";
-        fetch(`crosssection?model=${model}&run_date=${runDate}&day=${day}&datetimeUTC=${datetimeUTC}&lat_start=${lat_start}&lon_start=${lon_start}&lat_end=${lat_end}&lon_end=${lon_end}`)
+        fetch(`application?kind=crosssection&model=${model}&run_date=${runDate}&day=${day}&datetimeUTC=${datetimeUTC}&lat_start=${lat_start}&lon_start=${lon_start}&lat_end=${lat_end}&lon_end=${lon_end}`)
             .then(response => {
                 if (response.ok) {
                     return response.arrayBuffer();

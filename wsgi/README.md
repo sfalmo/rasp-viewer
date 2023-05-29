@@ -21,8 +21,7 @@ For Apache, add something like this to the VirtualHost section of your domain:
     WSGIDaemonProcess your.domain
     WSGIProcessGroup your.domain
     WSGIScriptAlias /rasp-viewer/helloworld /path/to/rasp-viewer/wsgi/helloworld.py
-    WSGIScriptAlias /rasp-viewer/sounding /path/to/rasp-viewer/wsgi/sounding.py
-    WSGIScriptAlias /rasp-viewer/crosssection /path/to/rasp-viewer/wsgi/crosssection.py
+    WSGIScriptAlias /rasp-viewer/application /path/to/rasp-viewer/wsgi/application.py
 </VirtualHost>
 ```
 

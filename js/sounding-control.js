@@ -69,7 +69,7 @@ L.SoundingControl = L.Class.extend({
         var {model, runDate, validDate, day, dir, time, datetimeUTC} = this._raspControl.datetimeSelector.get();
         var {lat, lng} = this.point.getLatLng();
         this.soundingStatus.innerHTML = "";
-        fetch(`sounding?model=${model}&run_date=${runDate}&day=${day}&datetimeUTC=${datetimeUTC}&lat=${lat}&lon=${lng}`)
+        fetch(`application?kind=sounding&model=${model}&run_date=${runDate}&day=${day}&datetimeUTC=${datetimeUTC}&lat=${lat}&lon=${lng}`)
             .then(response => {
                 if (response.ok) {
                     return response.json();
