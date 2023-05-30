@@ -207,8 +207,6 @@ const cLayers = {
     overlays: {
         [dict("Airspace")]: L.tileLayer('https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png?apiKey=decca790b0f2ea35ecd0534d2385b8b5', {
             attribution: 'Airspace by <a href="https://www.openaip.net" target="_blank">OpenAip</a>',
-            transparent: true,
-            opacity: 0.5
         })
     },
 };
