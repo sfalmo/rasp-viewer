@@ -62,6 +62,7 @@ body {
 #scale {
     flex: 0 0 auto;
     display: flex;
+    white-space: nowrap;
 }
 @media (orientation: landscape) {
     #scale {
