@@ -2,8 +2,9 @@
 
 ## Start a run
 
-First, make sure that a secret key with the filename `<project>_key` exists in your `.ssh` directory, where `<project>` is the name of the Google Cloud project.
-This key is used by the compute instance to transfer the results of the run back to the webserver.
+An SSH key is used by the compute instance to transfer the results of the run back to the webserver.
+For this, the script expects a secret key with the filename `<project>_key` in your `~/.ssh` directory, where `<project>` is the name of the Google Cloud project.
+Additionally, the corresponding public key `<project>_key.pub` needs to be added to `~/.ssh/authorized_keys`.
 
 ```shell
 $ ./start_compute.sh <region> <day> <results directory>

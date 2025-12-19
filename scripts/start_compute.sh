@@ -11,7 +11,13 @@
 if [[ $# -ne 3 ]]
 then
     echo "USAGE: start_compute.sh <REGION> <day> <resultsdir>"
-    exit 1;
+    exit 1
+fi
+
+if ! command -v rsync >/dev/null 2>&1
+then
+    echo "ERROR: rsync needs to be installed"
+    exit 1
 fi
 
 REGION=$1
@@ -27,16 +33,15 @@ if [[ -f "$sshkeyfilename" ]]
 then
     sshkey="$(cat "$sshkeyfilename")"
 else
-    echo "SSH key cound not be found at $sshkeyfilename. Make sure you are logged in with the correct username and have generated a key pair."
-    exit 1;
+    echo "ERROR: SSH key cound not be found at $sshkeyfilename. Make sure you are logged in with the correct username and have generated a key pair saved in ~/.ssh with the expected name."
+    exit 1
 fi
 hostname="$(hostname -A | cut -d' ' -f1)"
 
 echo "Starting VM for ${REGION} ${day} and expecting data in ${resultsdir} ..."
 gcloud compute --project="$project" instances create-with-container "rasp-compute-$region-$day" \
        --zone="$zone" \
-       --machine-type=n2d-highcpu-8 \
-       --min-cpu-platform="AMD Milan" \
+       --machine-type=c4d-highcpu-8 \
        --subnet=default \
        --network-tier=PREMIUM \
        --metadata=google-logging-enabled=true \
@@ -45,13 +50,13 @@ gcloud compute --project="$project" instances create-with-container "rasp-comput
        --scopes=https://www.googleapis.com/auth/cloud-platform \
        --image-family=cos-stable \
        --image-project=cos-cloud \
-       --boot-disk-size=20GB \
-       --boot-disk-type=pd-balanced \
+       --boot-disk-type=hyperdisk-balanced \
+       --boot-disk-size=20 \
        --boot-disk-device-name="rasp-compute-$region-$day" \
        --no-shielded-secure-boot \
        --shielded-vtpm \
        --shielded-integrity-monitoring \
-       --container-image="europe-west3-docker.pkg.dev/$project/rasp/rasp:fedora36_WRFv4.5-znver3_$REGION" \
+       --container-image="europe-west3-docker.pkg.dev/$project/rasp/rasp:fedora42_WRFv4.7.1-znver5_$REGION" \
        --container-restart-policy=always \
        --container-privileged --container-stdin --container-tty \
        --container-env=START_DAY="$day",OFFSET_HOUR=0,WEBSERVER_SEND=1,SEND_WRFOUT=1,SSH_KEY="$sshkey",WEBSERVER_HOST="$hostname",WEBSERVER_USER="$LOGNAME",WEBSERVER_RESULTSDIR="$resultsdir",REQUEST_DELETE=1 \

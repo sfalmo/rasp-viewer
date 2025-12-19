@@ -1,6 +1,6 @@
 import netCDF4 as nc
-import wrf
 import numpy as np
+import wrf
 
 
 def sounding(q, wrf_filename):
@@ -23,7 +23,8 @@ def sounding(q, wrf_filename):
     data["cldfra"] = list(wrf.extract_vars(wrf_file, 0, "CLDFRA", meta=False).values())[0][:, x, y]
     data["qcloud"] = list(wrf.extract_vars(wrf_file, 0, "QCLOUD", meta=False).values())[0][:, x, y]
 
-    sounding = [dict(zip(data.keys(), vals)) for vals in zip(*data.values())]
+    values_plain = [vals.tolist() for vals in data.values()]
+    sounding = [dict(zip(data.keys(), vals)) for vals in zip(*values_plain)]
     sounding = [s for s in sounding if s["hght"] < hmax]
     return sounding
 
