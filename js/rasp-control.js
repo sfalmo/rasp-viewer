@@ -21,8 +21,8 @@ L.Control.RASPControl = L.Control.extend({
         this._map = map;
         this._initPanel();
 
-        this.raspLayer = raspLayer().addTo(map);
         this.validIndicator = validIndicator().addTo(map);
+        this.raspLayer = raspLayer().addTo(map);
 
         this.plotContent = document.getElementById("plotContent");
         this.plotClose = document.getElementById("plotClose");

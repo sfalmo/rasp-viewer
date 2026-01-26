@@ -69,8 +69,9 @@ L.Control.DatetimeSelector = L.Control.extend({
                 return undefined;
             }
             var logDir = cDefaults.forecastServerResults + "/LOG/" + modelKey + "/" + runDate.toISODate() + "/" + day;
-            return fetch(logDir + "/wrf.out")
-                .then(response => {
+            return fetch(logDir + "/wrf.out", {
+                method: "HEAD",
+            }).then(response => {
                     if (response.ok) {
                         return {modelKey: modelKey, validDate: validDate, runDate: runDate, day: day};
                     } else {

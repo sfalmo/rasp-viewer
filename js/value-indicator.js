@@ -2,8 +2,7 @@ import { isLandscape } from './utils';
 
 L.Control.ValueIndicator = L.Control.extend({
     options: {
-        position: 'topleft',
-        opacity: 1
+        position: 'topleft'
     },
     initialize: function(scale, options) {
         this.scaleUnit = scale.getElementsByClassName("scaleUnit")[0];
@@ -14,7 +13,7 @@ L.Control.ValueIndicator = L.Control.extend({
         this.hideScaleIndicator();
     },
     onAdd: function (map) {
-        this._container = L.DomUtil.create('div', 'leaflet-control-attribution bg-light user-select-none');
+        this._container = L.DomUtil.create('div', 'leaflet-control-attribution user-select-none');
         this._parameter = L.DomUtil.create('span', 'fw-bold h5', this._container);
         this._value = L.DomUtil.create('span', 'ps-2 text-nowrap', this._container);
         return this._container;
