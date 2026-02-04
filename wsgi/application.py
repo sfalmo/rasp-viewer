@@ -14,14 +14,14 @@ def sounding(q, wrf_filename):
 
     data = {}
     # GSD Sounding
-    data["press"] = wrf.getvar(wrf_file, "pressure", meta=False)[:, x, y]
-    data["hght"] = wrf.getvar(wrf_file, "height", meta=False)[:, x, y]
-    data["temp"] = wrf.getvar(wrf_file, "tc", meta=False)[:, x, y]
-    data["dwpt"] = wrf.getvar(wrf_file, "td", meta=False)[:, x, y]
-    data["wspd"], data["wdir"] = wrf.getvar(wrf_file, "uvmet_wspd_wdir", meta=False)[:, :, x, y]
+    data["press"] = np.copy(wrf.getvar(wrf_file, "pressure", meta=False)[:, x, y])
+    data["hght"] = np.copy(wrf.getvar(wrf_file, "height", meta=False)[:, x, y])
+    data["temp"] = np.copy(wrf.getvar(wrf_file, "tc", meta=False)[:, x, y])
+    data["dwpt"] = np.copy(wrf.getvar(wrf_file, "td", meta=False)[:, x, y])
+    data["wspd"], data["wdir"] = np.copy(wrf.getvar(wrf_file, "uvmet_wspd_wdir", meta=False)[:, :, x, y])
     # Additional stuff
-    data["cldfra"] = list(wrf.extract_vars(wrf_file, 0, "CLDFRA", meta=False).values())[0][:, x, y]
-    data["qcloud"] = list(wrf.extract_vars(wrf_file, 0, "QCLOUD", meta=False).values())[0][:, x, y]
+    data["cldfra"] = np.copy(list(wrf.extract_vars(wrf_file, 0, "CLDFRA", meta=False).values())[0][:, x, y])
+    data["qcloud"] = np.copy(list(wrf.extract_vars(wrf_file, 0, "QCLOUD", meta=False).values())[0][:, x, y])
 
     values_plain = [vals.tolist() for vals in data.values()]
     sounding = [dict(zip(data.keys(), vals)) for vals in zip(*values_plain)]
