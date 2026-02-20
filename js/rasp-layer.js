@@ -11,7 +11,6 @@ L.RaspLayer = L.Layer.extend({
         this._map = map;
 
         this.opacityLevel = cDefaults.opacityLevel;
-        this.opacityDelta = cDefaults.opacityDelta;
         this.setOpacity(this.opacityLevel);
 
         this.canvas = document.createElement('canvas');
@@ -32,14 +31,6 @@ L.RaspLayer = L.Layer.extend({
     onRemove: function() {
         this._map.off('mousemove', this._onMouseMove, this);
     },
-    opacityUp: function() {
-        this.opacityLevel = Math.min(this.opacityLevel + this.opacityDelta, 1);
-        this.setOpacity(this.opacityLevel);
-    },
-    opacityDown: function() {
-        this.opacityLevel = Math.max(this.opacityLevel - this.opacityDelta, 0);
-        this.setOpacity(this.opacityLevel);
-    },
     setOpacity: function(opacity) {
         this._map.getPane('overlayPane').style.opacity = opacity;
         this._map.getPane('shadowPane').style.opacity = opacity;
@@ -59,7 +50,6 @@ L.RaspLayer = L.Layer.extend({
             this.units = [parameter.unit];
             this.domains = [parameter.domain];
         }
-        this.valueIndicator.updateParameter(parameter.longname);
         Promise.all(georasters.map(georaster => georaster.readRasters()))
             .then(data => {
                 this.data = data;
@@ -70,10 +60,14 @@ L.RaspLayer = L.Layer.extend({
                 this.data.ymin = ymin;
                 this.data.xmax = xmax;
                 this.data.ymax = ymax;
-                this.data.noDataValue = georasters[0].getGDALNoData();
+                return georasters[0].fileDirectory.loadValue('GDAL_NODATA');
+            })
+	    .then(noDataValue => {
+		this.data.noDataValue = Number(noDataValue.substring(0, noDataValue.length - 1));
+                this.valueIndicator.updateParameter(parameter.longname);
                 this._render(parameter);
                 this._updateValueIndicator(this._lastLat, this._lastLng);
-            });
+	    });
     },
     _render: function(parameter) {
         this.windbarbRenderer.clear();

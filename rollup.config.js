@@ -2,8 +2,8 @@ import resolve from '@rollup/plugin-node-resolve';
 import { babel } from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
-import { terser } from 'rollup-plugin-terser';
-// import analyze from 'rollup-plugin-analyzer';
+import terser from '@rollup/plugin-terser';
+import analyze from 'rollup-plugin-analyzer';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -18,7 +18,7 @@ export default {
     plugins: [
         json(),
         resolve({
-            browser: true
+            browser: true,
         }),
         commonjs(),
         babel({
@@ -26,6 +26,6 @@ export default {
             exclude: 'node_modules/**'
         }),
         production && terser(),
-        // analyze()
-	  ]
+        production && analyze(),
+    ]
 };

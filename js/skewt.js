@@ -244,10 +244,11 @@ var SkewT = function(div) {
     };
 
     var makeBarbTemplates = function(){
-        var speeds = d3.range(5,105,5);
+        var speeds = d3.range(0,200,5);
+	var barbcolor = "rgba(0, 0, 0, 0.5)";
         var barbdef = container.append('defs');
         speeds.forEach(function(d) {
-            var thisbarb = barbdef.append('g').attr('id', 'barb'+d);
+            var thisbarb = barbdef.append('g').attr('id', 'barb'+d).style("fill", barbcolor).style("stroke", barbcolor);
             var flags = Math.floor(d/50);
             var pennants = Math.floor((d - flags*50)/10);
             var halfpennants = Math.floor((d - flags*50 - pennants*10)/5);
@@ -257,8 +258,7 @@ var SkewT = function(div) {
             // Draw wind barb flags and pennants for each stem
             for (var i=0; i<flags; i++) {
                 thisbarb.append("polyline")
-                    .attr("points", "0,"+px+" -10,"+(px)+" 0,"+(px-4))
-                    .style("fill", "#000");
+                    .attr("points", "0,"+px+" -10,"+(px)+" 0,"+(px-4));
                 px -= 7;
             }
             // Draw pennants on each barb
@@ -288,17 +288,19 @@ var SkewT = function(div) {
         // Draw tooltips
         var tmpcfocus = tooltipgroup.append("g").style("fill", "red").style("stroke", "none");
         tmpcfocus.append("circle").attr("r", 4);
-        tmpcfocus.append("text").attr("x", 9).attr("dy", ".35em");
+        tmpcfocus.append("text").attr("font-size", "small").attr("x", 6).attr("dy", ".35em");
 
         var dwpcfocus = tooltipgroup.append("g").style("fill", "blue").style("stroke", "none");
         dwpcfocus.append("circle").attr("r", 4);
-        dwpcfocus.append("text").attr("x", -9).attr("text-anchor", "end").attr("dy", ".35em");
+        dwpcfocus.append("text").attr("font-size", "small").attr("x", -6).attr("text-anchor", "end").attr("dy", ".35em");
 
         var hghtfocus = tooltipgroup.append("g");
-        hghtfocus.append("text").attr("x", 0).attr("text-anchor", "start").attr("dy", ".35em");
+        hghtfocus.append("text").attr("font-size", "small").attr("x", 0).attr("text-anchor", "start").attr("dy", ".35em");
 
+        var wdirfocus = tooltipgroup.append("g");
+        wdirfocus.append("text").attr("font-size", "small").attr("x", 0).attr("text-anchor", "end").attr("dy", ".35em");
         var wspdfocus = tooltipgroup.append("g");
-        wspdfocus.append("text").attr("x", 0).attr("text-anchor", "start").attr("dy", ".35em");
+        wspdfocus.append("text").attr("font-size", "small").attr("x", 0).attr("text-anchor", "end").attr("dy", ".35em");
 
         container.append("rect")
             .style("fill", "none")
@@ -314,13 +316,15 @@ var SkewT = function(div) {
                 var d1 = lines[i];
                 var d = y0 - d0.press > d1.press - y0 ? d1 : d0;
                 tmpcfocus.attr("transform", "translate(" + skewx(d.temp, d.press) + "," + y(d.press) + ")");
-                dwpcfocus.attr("transform", "translate(" + skewx(d.dwpt, d.press)+ "," + y(d.press) + ")");
-                hghtfocus.attr("transform", "translate(5," + y(d.press) + ")");
-                tmpcfocus.select("text").text(Math.round(d.temp)+"°C");
-                dwpcfocus.select("text").text(Math.round(d.dwpt)+"°C");
-                hghtfocus.select("text").text(Math.round(d.hght)+" m");
-                wspdfocus.attr("transform", "translate(" + (w-60)  + "," + y(d.press) + ")");
-                wspdfocus.select("text").text(Math.round(convert(d.wspd, unit)) + " " + unit);
+                dwpcfocus.attr("transform", "translate(" + skewx(d.dwpt, d.press) + "," + y(d.press) + ")");
+                hghtfocus.attr("transform", "translate(3," + y(d.press) + ")");
+                wdirfocus.attr("transform", "translate(" + (w-20)  + "," + (y(d.press)+7) + ")");
+                wspdfocus.attr("transform", "translate(" + (w-20)  + "," + (y(d.press)-7) + ")");
+                tmpcfocus.select("text").text(Math.round(d.temp)+" °C");
+                dwpcfocus.select("text").text(Math.round(d.dwpt)+" °C");
+                hghtfocus.select("text").text(Math.round(d.hght)+" m");
+                wdirfocus.select("text").text(Math.round(d.wdir) + "°");
+                wspdfocus.select("text").text(Math.round(convert(d.wspd, unit)) + " " + unit);
             });
     };
 

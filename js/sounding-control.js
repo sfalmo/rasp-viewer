@@ -3,15 +3,11 @@ import SkewT from './skewt';
 L.SoundingControl = L.Class.extend({
     initialize: function(raspControl, options) {
         this._raspControl = raspControl;
-        this._map = raspControl._map;
-        var raspPanel = raspControl._raspPanel;
-        var soundingDiv = L.DomUtil.create('div', 'mb-2', raspPanel);
-        this.soundingButton = L.DomUtil.create('button', 'btn btn-outline-primary mb-1', soundingDiv);
-        this.soundingButton.title = dict("sounding");
-        this.soundingButton.innerHTML = dict("sounding");
-        this.soundingHelp = L.DomUtil.create('div', '', soundingDiv);
+        this._map = this._raspControl._map;
+        this.soundingButton = this._raspControl.soundingButton;
+        this.soundingHelp = this._raspControl.interactiveHelp;
+        this.soundingStatus = this._raspControl.interactiveStatus;
         this.soundingButton.onclick = () => { this.toggle(); };
-        this.soundingStatus = L.DomUtil.create('div', 'text-danger', soundingDiv);
         this._raspControl.on('modelDayChange', () => { this.update(); });
         this._raspControl.on('timeChange', () => { this.update(); });
 

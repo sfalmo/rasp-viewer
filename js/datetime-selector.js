@@ -13,7 +13,7 @@ L.Control.DatetimeSelector = L.Control.extend({
         this._container.style.backgroundColor = "rgba(255, 255, 255, 0)";
         this._container.style.borderStyle = "none";
         L.DomEvent.disableClickPropagation(this._container);
-		    L.DomEvent.disableScrollPropagation(this._container);
+        L.DomEvent.disableScrollPropagation(this._container);
         var modelDayTimeDiv = L.DomUtil.create('div', 'd-flex justify-content-center', this._container);
         var modelDayGroup = L.DomUtil.create('div', '', modelDayTimeDiv);
         this.modelDaySelect = L.DomUtil.create('select', 'form-select w-auto', modelDayGroup);
@@ -68,6 +68,10 @@ L.Control.DatetimeSelector = L.Control.extend({
             if (day > Math.max(...model.days, model.days.length)) {
                 return undefined;
             }
+	    if (day < 0) {
+                day += 1;
+                return fetchRecursive(runDate.minus({ days: 1 }), day);
+	    }
             var logDir = cDefaults.forecastServerResults + "/LOG/" + modelKey + "/" + runDate.toISODate() + "/" + day;
             return fetch(logDir + "/wrf.out", {
                 method: "HEAD",
@@ -116,7 +120,7 @@ L.Control.DatetimeSelector = L.Control.extend({
         this.timeSelect.options.length = 0; // Clear all times
         var model = cModels[this.get().model];
         for (const hour of model.hours) {
-            this.timeSelect.add(new Option(hour, hour));
+            this.timeSelect.add(new Option(hour.slice(0, 2) + ':' + hour.slice(2, 4), hour));
             if (!currentHour && hour == cDefaults.startHour || hour == currentHour) {
                 this.timeSelect.options[this.timeSelect.options.length - 1].selected = true;
             }

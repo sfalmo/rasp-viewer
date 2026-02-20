@@ -1,5 +1,4 @@
 import * as GeoTIFF from 'geotiff';
-import * as plotty from 'plotty';
 
 import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
 import validIndicator from './valid-indicator.js';
@@ -108,24 +107,31 @@ L.Control.RASPControl = L.Control.extend({
         parameterSummary.innerHTML = dict("parameterDetails_summary");
         this.parameterDescription = L.DomUtil.create('span', 'parameterDescription', parameterDetails);
 
+        var opacityDiv = L.DomUtil.create('div', 'd-flex align-items-center mb-2', this._raspPanel);
+        var opacityIconImg = L.DomUtil.create('img', 'me-2', opacityDiv);
+        opacityIconImg.src = 'img/opacity.svg';
+        opacityIconImg.title = dict("opacityIcon_title");
+        opacityIconImg.style.height = '1.5em';
+        var opacitySlider = L.DomUtil.create('input', 'form-range', opacityDiv);
+        opacitySlider.id = 'opacitySlider';
+        opacitySlider.type = 'range';
+        opacitySlider.title = dict("opacityIcon_title");
+        opacitySlider.value = cDefaults.opacityLevel * 100;
+        opacitySlider.oninput = (e) => { this.raspLayer.setOpacity(e.target.valueAsNumber / 100); };
+
+        var interactiveDiv = L.DomUtil.create('div', 'mb-2', this._raspPanel);
+        this.crosssectionButton = L.DomUtil.create('button', 'btn btn-outline-primary me-2', interactiveDiv);
+        this.crosssectionButton.title = dict("crosssection");
+        this.crosssectionButton.innerHTML = dict("crosssection");
+        this.soundingButton = L.DomUtil.create('button', 'btn btn-outline-primary', interactiveDiv);
+        this.soundingButton.title = dict("sounding");
+        this.soundingButton.innerHTML = dict("sounding");
+        this.interactiveHelp = L.DomUtil.create('div', 'mt-1', interactiveDiv);
+        this.interactiveStatus = L.DomUtil.create('div', 'text-danger', interactiveDiv);
         this.crosssectionControl = crosssectionControl(this);
         this.soundingControl = soundingControl(this);
 
-        var miscControls = L.DomUtil.create('div', 'd-flex align-items-center', this._raspPanel);
-        var opacityDiv = L.DomUtil.create('div', 'btn-group', miscControls);
-        var opacityDownButton = L.DomUtil.create('button', 'btn btn-sm btn-outline-secondary', opacityDiv);
-        opacityDownButton.onclick = () => { this.raspLayer.opacityDown(); };
-        opacityDownButton.title = dict("opacityDecreaseButton_title");
-        opacityDownButton.innerHTML = "−";
-        var opacityIcon = L.DomUtil.create('span', 'btn btn-sm btn-outline-secondary disabled', opacityDiv);
-        var opacityIconImg = L.DomUtil.create('img', 'icon', opacityIcon);
-        opacityIconImg.src = 'img/opacity.svg';
-        var opacityUpButton = L.DomUtil.create('button', 'btn btn-sm btn-outline-secondary', opacityDiv);
-        opacityUpButton.onclick = () => { this.raspLayer.opacityUp(); };
-        opacityUpButton.title = dict("opacityIncreaseButton_title");
-        opacityUpButton.innerHTML = "+";
-
-        var meteogramDiv = L.DomUtil.create('div', 'ms-4', miscControls);
+        var meteogramDiv = L.DomUtil.create('div', '', this._raspPanel);
         var meteogramLabel = L.DomUtil.create('label', '', meteogramDiv);
         meteogramLabel.title = dict("meteogramCheckbox_label");
         this.meteogramCheckbox = L.DomUtil.create('input', 'me-1', meteogramLabel);
@@ -136,7 +142,7 @@ L.Control.RASPControl = L.Control.extend({
 
         this._collapseLink = L.DomUtil.create('a', 'leaflet-control-collapse-button', this._raspPanel);
         this._collapseLink.innerHTML = '⇱';
-        this._collapseLink.title = 'Panel minimieren';
+        this._collapseLink.title = dict("Minimize panel");
         this._collapseLink.href = '#';
         L.DomEvent.on(this._collapseLink, 'click', this.collapse, this);
 

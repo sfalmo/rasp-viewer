@@ -2,9 +2,10 @@
 const cModels = {
     "TIR": {
         "description": "TIR 2km",
-        "center":   ["50", "12"],
+        //"center":   [50.2, 11.2],
+        "center":   [50, 12],
         "resolution": 2, // in km
-        "days": [-1, 0, 1],
+        "days": [-2, -1, 0, 1],
         "hours": ["0800", "0900", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000"],
         "timezone": "Europe/Berlin",
         "zoom": 7,
@@ -45,14 +46,18 @@ const cModels = {
 
             // Wave
             "press950",
+            //"press900",
             "press850",
+            //"press800",
+            //"press750",
             "press700",
+            //"press600",
             "press500",
 
             // General
             "sfctemp",
             "sfcdewpt",
-            // "mslpress",
+            //"mslpress",
             "rain1",
             "cape",
 
@@ -144,6 +149,9 @@ const cParameters = {
     "sfcwind":       { category: "wind", "longname": dict("sfcwind.longname"),       "description": dict("sfcwind.description"),
                        composite: { of: ["sfcwindspd", "sfcwinddir"], units: ["m/s", "°"], domains: [[0, 30]], type: "wind" }
                      },
+    "sfcwind":       { category: "wind", "longname": dict("sfcwind2.longname"),      "description": dict("sfcwind2.description"),
+                       composite: { of: ["sfcwind2spd", "sfcwind2dir"], units: ["m/s", "°"], domains: [[0, 30]], type: "wind" }
+                     },
     "blwind":        { category: "wind", "longname": dict("blwind.longname"),        "description": dict("blwind.description"),
                        composite: { of: ["blwindspd", "blwinddir"], units: ["m/s", "°"], domains: [[0, 30]], type: "wind" }
                      },
@@ -151,23 +159,10 @@ const cParameters = {
                        composite: { of: ["bltopwindspd", "bltopwinddir"], units: ["m/s", "°"], domains: [[0, 30]], type: "wind" }
                      },
     "blwindshear":   { category: "wind", "longname": dict("blwindshear.longname"),   "description": dict("blwindshear.description"), unit: "m/s", domain: [0, 30] },
-    // Wave
-    "press950":      { category: "wave", "longname": dict("press950.longname"),      "description": dict("press950.description"),
-                       composite: { of: ["press950", "press950wspd", "press950wdir"], units: ["cm/s", "m/s", "°"], domains: [[-250, 250], [0, 30]], type: "press" }
-                     },
-    "press850":      { category: "wave", "longname": dict("press850.longname"),      "description": dict("press850.description"),
-                       composite: { of: ["press850", "press850wspd", "press850wdir"], units: ["cm/s", "m/s", "°"], domains: [[-250, 250], [0, 30]], type: "press" }
-                     },
-    "press700":      { category: "wave", "longname": dict("press700.longname"),      "description": dict("press700.description"),
-                       composite: { of: ["press700", "press700wspd", "press700wdir"], units: ["cm/s", "m/s", "°"], domains: [[-250, 250], [0, 30]], type: "press" }
-                     },
-    "press500":      { category: "wave", "longname": dict("press500.longname"),      "description": dict("press500.description"),
-                       composite: { of: ["press500", "press500wspd", "press500wdir"], units: ["cm/s", "m/s", "°"], domains: [[-250, 250], [0, 30]], type: "press" }
-                     },
     // General
     "sfctemp":       { category: "general", "longname": dict("sfctemp.longname"),       "description": dict("sfctemp.description"), unit: "°C", domain: [-10, 40] },
     "sfcdewpt":      { category: "general", "longname": dict("sfcdewpt.longname"),      "description": dict("sfcdewpt.description"), unit: "°C", domain: [-20, 30] },
-    "mslpress":      { category: "general", "longname": dict("mslpress.longname"),      "description": dict("mslpress.description"), unit: "hPa" },
+    "mslpress":      { category: "general", "longname": dict("mslpress.longname"),      "description": dict("mslpress.description"), unit: "hPa", domain: [990, 1030] },
     "rain1":         { category: "general", "longname": dict("rain1.longname"),         "description": dict("rain1.description"), unit: "mm/h", domain: [0, 10] },
     "cape":          { category: "general", "longname": dict("cape.longname"),          "description": dict("cape.description"), unit: "J/kg", domain: [0, 2000] },
     // Experimental
@@ -177,6 +172,31 @@ const cParameters = {
     "blicw":         { category: "experimental", "longname": dict("blicw.longname"),         "description": dict("blicw.description"), unit: "g", domain: [0, 100] },
     "blcwbase":      { category: "experimental", "longname": dict("blcwbase.longname"),      "description": dict("blcwbase.description"), unit: "m", domain: [0, 3000] },
 };
+
+function press2FL(hPa) {
+    const feet = (1 - Math.pow(hPa / 1013.25, 0.190284)) * 145366.45;
+    const fl = Math.round(feet / 100);
+    let flString = fl.toString();
+    while (flString.length < 3) {
+        flString = "0" + flString;
+    }
+    return flString;
+}
+
+// Wave, select applicable pressure levels
+for (const hPa of [950, 900, 850, 800, 750, 700, 600, 500]) {
+    cParameters[`press${hPa}`] = {
+        category: "wave",
+        longname: `${dict("press.longname")} ${hPa}hPa (~FL${press2FL(hPa)})`,
+        description: dict("press.description"),
+        composite: {
+            of: [`press${hPa}`, `press${hPa}wspd`, `press${hPa}wdir`],
+            units: ["cm/s", "m/s", "°"],
+            domains: [[-250, 250], [0, 30]],
+            type: "press"
+        }
+    };
+}
 
 const cMeteograms = {
     "TIR": {
@@ -217,14 +237,14 @@ const cDefaults = {
     baseLayer: dict("Topography"),
     overlays: [],
     zoom: 7,
-    minZoom: 6,
+    minZoom: 3,
     maxZoom: 13,
     model: "TIR",                   // default model to start on
     parameter: "wstar",     // which paramter to start on
     startHour: '1300',
     opacityLevel: 0.7,
     opacityDelta: 0.1,
-    loadingAnimationDelay: 300, // ms. Wait this long before showing a loading animation for the to-be-shown overlay
+    loadingAnimationDelay: 100, // ms. Wait this long before showing a loading animation for the to-be-shown overlay
     zoomLocation: 'bottomleft',            // Zoom control position
     scaleLocation: 'bottomleft',           // Scale position
     layersLocation: 'topleft',             // Layer selector position

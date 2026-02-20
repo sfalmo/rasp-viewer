@@ -5,15 +5,11 @@ import Plotly from 'plotly.js/dist/plotly-cartesian';
 L.CrosssectionControl = L.Class.extend({
     initialize: function(raspControl, options) {
         this._raspControl = raspControl;
-        this._map = raspControl._map;
-        var raspPanel = raspControl._raspPanel;
-        var crosssectionDiv = L.DomUtil.create('div', 'mb-2', raspPanel);
-        this.crosssectionButton = L.DomUtil.create('button', 'btn btn-outline-primary mb-1', crosssectionDiv);
-        this.crosssectionButton.title = dict("crosssection");
-        this.crosssectionButton.innerHTML = dict("crosssection");
-        this.crosssectionHelp = L.DomUtil.create('div', '', crosssectionDiv);
+        this._map = this._raspControl._map;
+        this.crosssectionButton = this._raspControl.crosssectionButton;
+        this.crosssectionHelp = this._raspControl.interactiveHelp;
+        this.crosssectionStatus = this._raspControl.interactiveStatus;
         this.crosssectionButton.onclick = () => { this.toggle(); };
-        this.crosssectionStatus = L.DomUtil.create('div', 'text-danger', crosssectionDiv);
         this._raspControl.on('modelDayChange', () => { this.update(); });
         this._raspControl.on('timeChange', () => { this.update(); });
 
