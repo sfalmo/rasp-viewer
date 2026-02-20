@@ -1,6 +1,6 @@
+import dict from '../lang.js';
 import { cColorscales } from '../config.js';
 import { unflatten } from './utils.js';
-import Plotly from 'plotly.js/dist/plotly-cartesian';
 
 L.CrosssectionControl = L.Class.extend({
     initialize: function(raspControl, options) {
@@ -154,7 +154,10 @@ L.CrosssectionControl = L.Class.extend({
                 };
                 this._raspControl.currentPlot = {type: "crosssection"};
                 this._raspControl.updatePlot();
-                Plotly.newPlot('plotContent', plotlyData, plotlyLayout, {displayModeBar: false, responsive: true});
+
+                import('plotly.js/dist/plotly-cartesian').then(({ default: Plotly }) => {
+                    Plotly.newPlot('plotContent', plotlyData, plotlyLayout, {displayModeBar: false, responsive: true});
+		});
             })
             .catch(err => {
                 this.crosssectionStatus.innerHTML = dict(err.message);

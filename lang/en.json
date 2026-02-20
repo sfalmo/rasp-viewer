@@ -1,6 +1,4 @@
-var lang = "en";
-
-var loadedDict = {
+{
     "forecastTitle": "aufwin.de | Forecast",
     "legalNotice": "Legal Notice",
     "privacyPolicy": "Privacy Policy",
@@ -131,4 +129,4 @@ var loadedDict = {
     "press.description": "Wind velocity and direction as well as collective vertical movement in selected pressure level.",
     "pfd_tot.longname": "Potential Flight Distance",
     "pfd_tot.description": "Estimate of a potential flight distance using the polar of a Discus with 100kg ballast."
-};
+}

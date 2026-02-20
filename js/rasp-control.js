@@ -1,11 +1,11 @@
-import * as GeoTIFF from 'geotiff';
-
+import dict from '../lang.js';
 import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
 import validIndicator from './valid-indicator.js';
 import datetimeSelector from './datetime-selector.js';
 import crosssectionControl from './crosssection-control.js';
 import soundingControl from './sounding-control.js';
 import raspLayer from './rasp-layer.js';
+import * as GeoTIFF from 'geotiff';
 
 L.Control.RASPControl = L.Control.extend({
     loadingAnimation: document.getElementById("loadingAnimation"),

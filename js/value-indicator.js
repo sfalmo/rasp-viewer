@@ -1,3 +1,4 @@
+import dict from '../lang.js';
 import { isLandscape } from './utils';
 
 L.Control.ValueIndicator = L.Control.extend({

@@ -1,6 +1,4 @@
-var lang = "de";
-
-var loadedDict = {
+{
     "forecastTitle": "aufwin.de | Vorhersage",
     "legalNotice": "Impressum",
     "privacyPolicy": "Datenschutz",
@@ -131,4 +129,4 @@ var loadedDict = {
     "press.description": "Windrichtung und -geschwindigkeit sowie Vertikalbewegung in gewählter Druckhöhe.",
     "pfd_tot.longname": "Potentielle Flugdistanz",
     "pfd_tot.description": "Abschätzung der potentiellen Flugdistanz mit der Polare eines Discus mit 100kg Ballast."
-};
+}

@@ -1,3 +1,4 @@
+import dict from '../lang.js';
 import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
 import { DateTime } from 'luxon';
 

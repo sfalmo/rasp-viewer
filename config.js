@@ -1,3 +1,5 @@
+import dict from './lang.js';
+
 // Used for the selectors and for auto populating other structures
 const cModels = {
     "TIR": {

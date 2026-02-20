@@ -1,3 +1,5 @@
+import dict from '../lang.js';
+
 L.Control.Attribution.Aufwinde = L.Control.Attribution.extend({
     addTo: function (map) {
         L.Control.Attribution.prototype.addTo.call(this, map);

@@ -1,3 +1,4 @@
+import dict from '../lang.js';
 import SkewT from './skewt';
 
 L.SoundingControl = L.Class.extend({

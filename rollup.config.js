@@ -10,10 +10,9 @@ const production = !process.env.ROLLUP_WATCH;
 export default {
     input: 'app.js',
     output: {
-        file: 'bundle.js',
-        format: 'iife',
+        dir: 'bundle',
+        format: 'es',
         sourcemap: true,
-        inlineDynamicImports: true
     },
     plugins: [
         json(),
