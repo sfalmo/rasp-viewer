@@ -105,7 +105,7 @@ L.Control.DatetimeSelector = L.Control.extend({
                         continue;
                     }
                     var {modelKey, runDate, validDate, day} = r;
-                    var description = validDate.toLocaleString(DateTime.DATE_SHORT);
+                    var description = validDate.toLocaleString({day:'2-digit', month:'2-digit', year:'numeric'});
                     var selectValue = {modelKey: modelKey, runDate: runDate.toISODate(), validDate: validDate.toISODate(), day: day};
                     this.modelDaySelect.add(new Option(description, JSON.stringify(selectValue)));
                     var today = DateTime.now().setZone(cModels[modelKey].timezone);

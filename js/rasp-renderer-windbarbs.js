@@ -61,53 +61,44 @@ L.RaspRendererWindbarbs = L.Class.extend({
         });
     },
     _getFlagSvgPath: function(speed) {
-        var ten   = 0;
-        var five  = 0;
-        var fifty = 0;
-        var index = 0;
-        var i;
+        var speedRounded = Math.round(speed / 5) * 5;
+        var flags = Math.floor(speedRounded / 50);
+        var pennants = Math.floor((speedRounded - flags * 50) / 10);
+        var halfpennants = Math.floor((speedRounded - flags * 50 - pennants * 10) / 5);
         var path = "";
         if (speed > 0) {
-            if (speed <= 7) {
-                path += "M0 2 L8 2 ";
-                index = 1;
-            } else {
-                path += "M1 2 L8 2 ";
+            path += "M2 4 L16 4 ";
+            var i;
+            var j;
+            var index = 0;
+            for (i = 0; i < flags; i++) {
+                j = 2 * index + 4 * i;
+                path += "M" + j + " 0 L" + (j + 2) + " 4 L" + j + " 4 L" + j + " 0 ";
             }
-            five = Math.floor(speed / 5);
-            if (speed % 5 >= 3) {
-                five += 1;
+            if (flags > 0) {
+                index += 4 * flags - 2;
             }
-            fifty = Math.floor(five / 10);
-            five -= fifty * 10;
-            ten = Math.floor(five / 2);
-            five -= ten * 2;
+            for (i = 0; i < pennants; i++) {
+                j = 2 * index + 2 * i;
+                path += "M" + j + " 0 L" + (j + 2) + " 4 ";
+            }
+            index += pennants;
+            if (halfpennants == 1) { // cannot be more than one halfpennant
+                j = 2 * index;
+                if (flags == 0 && pennants == 0) {
+                    j += 2;
+                }
+                path += "M" + (j + 1) + " 2 L" + (j + 2) + " 4 ";
+            }
+            path += "Z";
         }
-        var j;
-        for (i = 0; i < fifty; i++) {
-            j = index + 2 * i;
-            path += "M" + j + " 0 L" + (j + 1) + " 2 L" + j + " 2 L" + j + " 0 ";
-        }
-        if (fifty > 0) {
-            index += 2 * (fifty - 0.5);
-        }
-        for (i = 0; i < ten; i++) {
-            j = index + i;
-            path += "M" + j + " 0 L" + (j + 1) + " 2 ";
-        }
-        index += ten;
-        for (i = 0; i < five; i++) {
-            j = index + i;
-            path += "M" + (j + 0.5) + " 1 L" + (j + 1) + " 2 ";
-        }
-        path += "Z";
         return path;
     },
     _getBarb: function(speedKt, angle, size) {
         var flagPath = this._getFlagSvgPath(speedKt);
         var halfsize = Math.floor(size / 2);
         size = halfsize * 2;
-        return `<svg width="${size}" height="${size}" viewBox="0 0 20 20"><path transform='translate(10 10) rotate(${angle + 90} 0 0) translate(-8 -2)' stroke='#000' stroke-width='0.5' d='${flagPath}'/></svg>`;
+        return `<svg width="${size}" height="${size}" viewBox="0 0 40 40"><path transform='translate(20 20) rotate(${angle + 90} 0 0) translate(-16 -4)' stroke='#000' stroke-width='1' d='${flagPath}'/></svg>`;
     }
 });
 

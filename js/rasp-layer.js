@@ -32,6 +32,7 @@ L.RaspLayer = L.Layer.extend({
         this._map.off('mousemove', this._onMouseMove, this);
     },
     setOpacity: function(opacity) {
+        this.opacityLevel = opacity;
         this._map.getPane('overlayPane').style.opacity = opacity;
         this._map.getPane('shadowPane').style.opacity = opacity;
     },

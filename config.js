@@ -245,7 +245,6 @@ const cDefaults = {
     parameter: "wstar",     // which paramter to start on
     startHour: '1300',
     opacityLevel: 0.7,
-    opacityDelta: 0.1,
     loadingAnimationDelay: 100, // ms. Wait this long before showing a loading animation for the to-be-shown overlay
     zoomLocation: 'bottomleft',            // Zoom control position
     scaleLocation: 'bottomleft',           // Scale position
