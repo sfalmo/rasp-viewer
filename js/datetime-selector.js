@@ -69,21 +69,21 @@ L.Control.DatetimeSelector = L.Control.extend({
             if (day > Math.max(...model.days, model.days.length)) {
                 return undefined;
             }
-	    if (day < 0) {
+            if (day < 0) {
                 day += 1;
                 return fetchRecursive(runDate.minus({ days: 1 }), day);
-	    }
+            }
             var logDir = cDefaults.forecastServerResults + "/LOG/" + modelKey + "/" + runDate.toISODate() + "/" + day;
             return fetch(logDir + "/wrf.out", {
                 method: "HEAD",
             }).then(response => {
-                    if (response.ok) {
-                        return {modelKey: modelKey, validDate: validDate, runDate: runDate, day: day};
-                    } else {
-                        day += 1;
-                        return fetchRecursive(runDate.minus({ days: 1 }), day);
-                    }
-                });
+                if (response.ok) {
+                    return {modelKey: modelKey, validDate: validDate, runDate: runDate, day: day};
+                } else {
+                    day += 1;
+                    return fetchRecursive(runDate.minus({ days: 1 }), day);
+                }
+            });
         };
         return fetchRecursive(today, day);
     },
@@ -105,7 +105,7 @@ L.Control.DatetimeSelector = L.Control.extend({
                         continue;
                     }
                     var {modelKey, runDate, validDate, day} = r;
-                    var description = validDate.toLocaleString({day:'2-digit', month:'2-digit', year:'numeric'});
+                    var description = validDate.toLocaleString({day: '2-digit', month:'2-digit', year:'numeric'}, {locale: document.documentElement.lang});
                     var selectValue = {modelKey: modelKey, runDate: runDate.toISODate(), validDate: validDate.toISODate(), day: day};
                     this.modelDaySelect.add(new Option(description, JSON.stringify(selectValue)));
                     var today = DateTime.now().setZone(cModels[modelKey].timezone);

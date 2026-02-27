@@ -240,12 +240,12 @@ const cDefaults = {
     overlays: [],
     zoom: 7,
     minZoom: 3,
-    maxZoom: 13,
-    model: "TIR",                   // default model to start on
-    parameter: "wstar",     // which paramter to start on
+    maxZoom: 14,
+    model: "TIR",                          // default model to start on
+    parameter: "wstar",                    // which paramter to start on
     startHour: '1300',
     opacityLevel: 0.7,
-    loadingAnimationDelay: 100, // ms. Wait this long before showing a loading animation for the to-be-shown overlay
+    loadingAnimationDelay: 100,            // ms. Wait this long before showing a loading animation for the to-be-shown overlay
     zoomLocation: 'bottomleft',            // Zoom control position
     scaleLocation: 'bottomleft',           // Scale position
     layersLocation: 'topleft',             // Layer selector position

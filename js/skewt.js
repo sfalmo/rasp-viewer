@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import drawWindbarbSvgPath from './draw-windbarb-svg-path.js';
 
 // Gas constant for dry air at the surface of the Earth
 const Rd = 287;
@@ -50,23 +51,20 @@ function dewpoint(vaporp) {
 }
 
 var SkewT = function(div) {
-    //properties used in calculations
+    // properties used in calculations
     var wrapper = d3.select(div);
     var width = parseInt(wrapper.style('width'), 10);
-    var height = width; //tofix
-    var margin = {top: 20, right: 50, bottom: 20, left: 40}; //container margins
-    var deg2rad = (Math.PI/180);
+    var height = width;
+    var margin = {top: 25, right: 5, bottom: 25, left: 40}; // container margins
+    var deg2rad = Math.PI/180;
     var basep = 1050;
-    var topp = 250;
-    var plines = [1000,850,700,500,300,200];
+    var topp = 290;
+    var plines = [1000,850,700,500,300];
     var barbsize = 20;
     // functions for Scales and axes. Note the inverted domain for the y-scale: bigger is up!
-    var r = d3.scaleLinear().range([0,300]).domain([0,150]);
-    var y2 = d3.scaleLinear();
     var bisectTemp = d3.bisector(function(d) { return d.press; }).left; // bisector function for tooltips
-    var w, h, tan, x, y, cloudScale, xAxis, yAxis, cloudAxis;
+    var w, h, tan, x, y, cloudScale, windScale, xAxis, yAxis, cloudAxis, windAxis;
     var data = [];
-    var unit = "m/s"; // or kmh
 
     var svg = wrapper.append("svg").attr("id", "svg"); // main svg
     var container = svg.append("g").attr("id", "container"); // container
@@ -83,12 +81,14 @@ var SkewT = function(div) {
         w = width - margin.left - margin.right;
         h = height - margin.top - margin.bottom;
         tan = h / w * 2;
-        x = d3.scaleLinear().range([0, w]).domain([-40,40]);
+        x = d3.scaleLinear().range([0, 14*w/15]).domain([-35,50]);
         y = d3.scaleLog().range([0, h]).domain([topp, basep]);
         cloudScale = d3.scaleLinear().range([0, w/6]).domain([0, 1]);
+        windScale = d3.scaleLinear().range([7 * w / 8, w]).domain([0, 50]);
         xAxis = d3.axisBottom(x).tickSize(0,0).ticks(10);
         yAxis = d3.axisLeft(y).tickSize(0,0).tickValues(plines).tickFormat(d3.format(".0d"));
         cloudAxis = d3.axisTop(cloudScale).tickSize(0,0).tickValues([0, 0.5, 1]);
+        windAxis = d3.axisTop(windScale).tickSize(0,0).tickValues([0, 20, 40]);
     }
 
     function skewx(temp, press) {
@@ -102,19 +102,6 @@ var SkewT = function(div) {
             .y(function(d, i) { return y(d.press); } );
     }
 
-    function convert(msvalue, unit) {
-        switch(unit) {
-        case "kt":
-            return msvalue*1.943844492;
-            break;
-        case "kmh":
-            return msvalue*3.6;
-            break;
-        default:
-            return msvalue;
-        }
-    }
-
     //assigns d3 events
     d3.select(window).on('resize', resize);
 
@@ -124,14 +111,25 @@ var SkewT = function(div) {
         svg.attr("width", w + margin.right + margin.left).attr("height", h + margin.top + margin.bottom);
         container.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         drawBackground();
-        makeBarbTemplates();
         plot(data);
     }
 
     var drawBackground = function() {
         // Add clipping path
+        var clipPolygonPoints = `0,0 0,${h} ${14*w/15},${h} ${14*w/15},${y(600)} ${3*w/4},${y(400)} ${3*w/4},0`;
+        skewtbg.append("polygon")
+            .attr("fill", "none")
+            .attr("stroke", "currentColor")
+            .attr("stroke-width", "0.5")
+            .attr("points", clipPolygonPoints);
+
         skewtbg.append("clipPath")
             .attr("id", "clipper")
+            .append("polygon")
+            .attr("points", clipPolygonPoints);
+
+        skewtbg.append("clipPath")
+            .attr("id", "clipperWind")
             .append("rect")
             .attr("x", 0)
             .attr("y", 0)
@@ -161,7 +159,8 @@ var SkewT = function(div) {
             .attr("y2", function(d) { return y(d); })
             .style("stroke", "#aaa")
             .style("fill", "none")
-            .style("stroke-width", "1px");
+            .style("stroke-width", "1px")
+            .attr("clip-path", "url(#clipper)");
 
         let dp = 10;
 
@@ -187,12 +186,14 @@ var SkewT = function(div) {
         }
 
         var isohumes = [];
-        for (let mixingRatio of [1, 2, 5, 10, 20]) { // mixing ratio in g/kg
-            mixingRatio /= 1000;
+        for (let mixingRatio of [1, 2, 3, 5, 8, 12, 20]) { // mixing ratio in g/kg
             let isoh = [];
             for (let press of d3.range(basep, 401, -dp)) {
-                isoh.push({temp: dewpoint(vaporPressure(press, mixingRatio)), press: press});
+                isoh.push({temp: dewpoint(vaporPressure(press, mixingRatio / 1000)), press: press});
             }
+            var textx = skewx(isoh[0].temp, isoh[0].press);
+            var texty = y(isoh[0].press) - 5;
+            skewtbg.append("text").attr("font-size", 10).attr("fill", "#380").attr("text-anchor", "middle").attr("x", textx).attr("y", texty).attr("transform", `rotate(-45 ${textx} ${texty})`).text(mixingRatio);
             isohumes.push(isoh);
         }
 
@@ -229,62 +230,28 @@ var SkewT = function(div) {
 
         // Line along right edge of plot
         skewtbg.append("line")
-            .attr("x1", w-0.5)
-            .attr("x2", w-0.5)
+            .attr("x1", 7 * w / 8 - 0.5)
+            .attr("x2", 7 * w / 8 - 0.5)
             .attr("y1", 0)
             .attr("y2", h)
-            .style("stroke", "#aaa")
+            .style("stroke", "currentColor")
             .style("fill", "none")
-            .style("stroke-width", "0.75px");
+            .style("stroke-width", "1");
 
         // Add axes
         skewtbg.append("g").attr("transform", "translate(0," + (h-0.5) + ")").call(xAxis);
+        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "middle").attr("x", w/2).attr("y", h + 22).text("T (°C)");
         skewtbg.append("g").attr("transform", "translate(-0.5,0)").call(yAxis);
+        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "middle").attr("transform", "rotate(270)").attr("y", -28).attr("x", -h/2).text("p (hPa)");
         skewtbg.append("g").call(cloudAxis);
-    };
-
-    var makeBarbTemplates = function(){
-        var speeds = d3.range(0,200,5);
-	var barbcolor = "rgba(0, 0, 0, 0.5)";
-        var barbdef = container.append('defs');
-        speeds.forEach(function(d) {
-            var thisbarb = barbdef.append('g').attr('id', 'barb'+d).style("fill", barbcolor).style("stroke", barbcolor);
-            var flags = Math.floor(d/50);
-            var pennants = Math.floor((d - flags*50)/10);
-            var halfpennants = Math.floor((d - flags*50 - pennants*10)/5);
-            var px = barbsize;
-            // Draw wind barb stems
-            thisbarb.append("line").attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", barbsize);
-            // Draw wind barb flags and pennants for each stem
-            for (var i=0; i<flags; i++) {
-                thisbarb.append("polyline")
-                    .attr("points", "0,"+px+" -10,"+(px)+" 0,"+(px-4));
-                px -= 7;
-            }
-            // Draw pennants on each barb
-            for (i=0; i<pennants; i++) {
-                thisbarb.append("line")
-                    .attr("x1", 0)
-                    .attr("x2", -10)
-                    .attr("y1", px)
-                    .attr("y2", px+4);
-                px -= 3;
-            }
-            // Draw half-pennants on each barb
-            for (i=0; i<halfpennants; i++) {
-                thisbarb.append("line")
-                    .attr("x1", 0)
-                    .attr("x2", -5)
-                    .attr("y1", px)
-                    .attr("y2", px+2);
-                px -= 3;
-            }
-        });
+        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "middle").attr("x", w/12).attr("y", -13).text("cloud fraction");
+        skewtbg.append("g").call(windAxis);
+        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "middle").attr("x", 15 * w / 16).attr("y", -13).text("v (m/s)");
     };
 
     var drawToolTips = function(skewtlines) {
         var lines = skewtlines.reverse();
-        var tooltipgroup = skewtgroup.append("g").style("display", "none").attr("clip-path", "url(#clipper)");
+        var tooltipgroup = skewtgroup.append("g").style("display", "none").attr("clip-path", "url(#clipperWind)");
         // Draw tooltips
         var tmpcfocus = tooltipgroup.append("g").style("fill", "red").style("stroke", "none");
         tmpcfocus.append("circle").attr("r", 4);
@@ -297,6 +264,7 @@ var SkewT = function(div) {
         var hghtfocus = tooltipgroup.append("g");
         hghtfocus.append("text").attr("font-size", "small").attr("x", 0).attr("text-anchor", "start").attr("dy", ".35em");
 
+        var wspddot = tooltipgroup.append("circle").attr("r", 4).style("fill", "olive");
         var wdirfocus = tooltipgroup.append("g");
         wdirfocus.append("text").attr("font-size", "small").attr("x", 0).attr("text-anchor", "end").attr("dy", ".35em");
         var wspdfocus = tooltipgroup.append("g");
@@ -318,22 +286,23 @@ var SkewT = function(div) {
                 tmpcfocus.attr("transform", "translate(" + skewx(d.temp, d.press) + "," + y(d.press) + ")");
                 dwpcfocus.attr("transform", "translate(" + skewx(d.dwpt, d.press) + "," + y(d.press) + ")");
                 hghtfocus.attr("transform", "translate(3," + y(d.press) + ")");
-                wdirfocus.attr("transform", "translate(" + (w-20)  + "," + (y(d.press)+7) + ")");
-                wspdfocus.attr("transform", "translate(" + (w-20)  + "," + (y(d.press)-7) + ")");
+                wdirfocus.attr("transform", "translate(" + w + "," + (y(d.press)+7) + ")");
+                wspdfocus.attr("transform", "translate(" + w + "," + (y(d.press)-7) + ")");
+                wspddot.attr("transform", "translate(" + windScale(d.wspd) + "," + y(d.press) + ")");
                 tmpcfocus.select("text").text(Math.round(d.temp)+" °C");
                 dwpcfocus.select("text").text(Math.round(d.dwpt)+" °C");
                 hghtfocus.select("text").text(Math.round(d.hght)+" m");
                 wdirfocus.select("text").text(Math.round(d.wdir) + "°");
-                wspdfocus.select("text").text(Math.round(convert(d.wspd, unit)) + " " + unit);
+                wspdfocus.select("text").text(Math.round(d.wspd) + " m/s");
             });
     };
 
     var plot = function(s){
         data = s;
-        skewtgroup.selectAll("path").remove(); //clear previous paths from skew
-        barbgroup.selectAll("use").remove(); //clear previous paths from barbs
+        skewtgroup.selectAll("path").remove(); // clear previous paths from skew
+        barbgroup.selectAll("path").remove(); // clear previous paths from skew
 
-        if(data.length==0) return;
+        if(data.length == 0) return;
 
         //skew-t stuff
         var skewtline = data.filter(function(d) { return (d.temp > -1000 && d.dwpt > -1000); });
@@ -359,9 +328,22 @@ var SkewT = function(div) {
         //barbs stuff
         var barbs = skewtline.filter(function(d) { return (d.wdir >= 0 && d.wspd >= 0 && d.press >= topp); });
         var allbarbs = barbgroup.selectAll("barbs")
-            .data(barbs).enter().append("use")
-            .attr("xlink:href", function (d) { return "#barb"+Math.round(convert(d.wspd, "kt")/5)*5; }) // 0,5,10,15,... always in kt
-            .attr("transform", function(d,i) { return "translate("+w+","+y(d.press)+") rotate("+(d.wdir+180)+")"; });
+            .data(barbs).enter().append("path")
+            .attr("d", function (d) { return drawWindbarbSvgPath(d.wspd * 1.94384); })
+            .attr("transform", function(d,i) { return `translate(${7 * w / 8} ${y(d.press)}) rotate(${d.wdir}) translate(-20, -20)`; });
+
+        var windSpeedPath = d3.line()
+            .curve(d3.curveMonotoneY)
+            .x(function(d, i) { return windScale(d.wspd);})
+            .y(function(d, i) { return y(d.press); } );
+
+        var windSpeedLine = skewtgroup.selectAll("windspeedlines")
+            .data(skewtlines).enter().append("path")
+            .style("fill", "none")
+            .style("stroke", "olive")
+            .style("stroke-width", "2px")
+            .attr("clip-path", "url(#clipperWind)")
+            .attr("d", windSpeedPath);
 
         var cloudArea = d3.area()
             .curve(d3.curveMonotoneY)
@@ -382,7 +364,6 @@ var SkewT = function(div) {
 
     var clear = function(s){
         skewtgroup.selectAll("path").remove(); //clear previous paths from skew
-        barbgroup.selectAll("use").remove(); //clear previous paths  from barbs
         //must clear tooltips!
         container.append("rect")
             .style("fill", "none")

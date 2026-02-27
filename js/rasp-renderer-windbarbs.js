@@ -1,7 +1,13 @@
+import drawWindbarbSvgPath from './draw-windbarb-svg-path.js';
+
 L.RaspRendererWindbarbs = L.Class.extend({
     initialize: function(map, layerGroup) {
         this._map = map;
         this.layerGroup = layerGroup;
+        this.windbarbSvgPaths = [];
+        for (let speed = 0; speed < 200; speed += 5) {
+            this.windbarbSvgPaths.push(drawWindbarbSvgPath(speed));
+        }
     },
     clear: function() {
         this.layerGroup.clearLayers();
@@ -60,45 +66,10 @@ L.RaspRendererWindbarbs = L.Class.extend({
             }
         });
     },
-    _getFlagSvgPath: function(speed) {
-        var speedRounded = Math.round(speed / 5) * 5;
-        var flags = Math.floor(speedRounded / 50);
-        var pennants = Math.floor((speedRounded - flags * 50) / 10);
-        var halfpennants = Math.floor((speedRounded - flags * 50 - pennants * 10) / 5);
-        var path = "";
-        if (speed > 0) {
-            path += "M2 4 L16 4 ";
-            var i;
-            var j;
-            var index = 0;
-            for (i = 0; i < flags; i++) {
-                j = 2 * index + 4 * i;
-                path += "M" + j + " 0 L" + (j + 2) + " 4 L" + j + " 4 L" + j + " 0 ";
-            }
-            if (flags > 0) {
-                index += 4 * flags - 2;
-            }
-            for (i = 0; i < pennants; i++) {
-                j = 2 * index + 2 * i;
-                path += "M" + j + " 0 L" + (j + 2) + " 4 ";
-            }
-            index += pennants;
-            if (halfpennants == 1) { // cannot be more than one halfpennant
-                j = 2 * index;
-                if (flags == 0 && pennants == 0) {
-                    j += 2;
-                }
-                path += "M" + (j + 1) + " 2 L" + (j + 2) + " 4 ";
-            }
-            path += "Z";
-        }
-        return path;
-    },
     _getBarb: function(speedKt, angle, size) {
-        var flagPath = this._getFlagSvgPath(speedKt);
-        var halfsize = Math.floor(size / 2);
-        size = halfsize * 2;
-        return `<svg width="${size}" height="${size}" viewBox="0 0 40 40"><path transform='translate(20 20) rotate(${angle + 90} 0 0) translate(-16 -4)' stroke='#000' stroke-width='1' d='${flagPath}'/></svg>`;
+        var flagPath = speedKt > 0 ? this.windbarbSvgPaths[Math.round(speedKt / 5)] : "";
+        var svg = `<svg width="${size}" height="${size}" viewBox="0 0 40 40" transform='rotate(${angle})'><path stroke="#000" stroke-width="1" d='${flagPath}'/></svg>`;
+        return svg;
     }
 });
 

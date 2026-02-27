@@ -8,7 +8,7 @@ def sounding(q, wrf_filename):
     lon = float(q["lon"])
     hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else 12000
     wrf_file = nc.Dataset(wrf_filename)
-    x, y = wrf.ll_to_xy(wrf_file, lat, lon, meta=False)
+    y, x = wrf.ll_to_xy(wrf_file, lat, lon, meta=False)
     if x < 0 or y < 0:
         raise IndexError("x or y out of boundary")
 
@@ -37,8 +37,8 @@ def crosssection(q, wrf_filename):
     hmax = float(q["hmax"]) if "hmax" in q and q["hmax"] else 10000
     dh = float(q["dh"]) if "dh" in q and q["dh"] else 200
     wrf_file = nc.Dataset(wrf_filename)
-    x_start, y_start = wrf.ll_to_xy(wrf_file, lat_start, lon_start, meta=False)
-    x_end, y_end = wrf.ll_to_xy(wrf_file, lat_end, lon_end, meta=False)
+    y_start, x_start = wrf.ll_to_xy(wrf_file, lat_start, lon_start, meta=False)
+    y_end, x_end = wrf.ll_to_xy(wrf_file, lat_end, lon_end, meta=False)
     if x_start < 0 or y_start < 0 or x_end < 0 or y_end < 0:
         raise IndexError("x or y of start or end point out of boundary")
 
