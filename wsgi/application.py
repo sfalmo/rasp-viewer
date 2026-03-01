@@ -74,7 +74,8 @@ def application(environ, start_response):
         valid_date, time = q["datetimeUTC"].split("T")
         hour = time[:2]
         minute = time[3:5]
-        wrf_filename = environ["DOCUMENT_ROOT"] + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
+        document_root = environ.get("DOCUMENT_ROOT", ".")
+        wrf_filename = document_root + f"/results/OUT/{model}/{run_date}/{day}/wrfout_d02_{valid_date}_{hour}:{minute}:00"
         if kind == "sounding":
             sounding_data = sounding(q, wrf_filename)
             status = "200 OK"

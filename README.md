@@ -18,16 +18,15 @@ Note that this can be a mere subfolder or symbolic link (e.g. `results`).
 
 ## Development
 
-Spin up a web server (e.g. with `python -m http.server` or `php -S localhost:8000`) and visit `localhost:8000` (use the appropriate port) in your browser.
-Then, in another terminal, execute `npm run watch`.
-You can now do your programming and a javascript bundle will be built automatically on every change.
+Bundle the javascript files with `npm run watch`, which will rebuild the bundle automatically when the source files are changed.
+Spin up a web server and visit `localhost:8000` in your browser.
+For convenience, `dev_server.sh` can be used for this if you have `uwsgi` and its Python plugin installed on your machine.
+Alternatively, a simple `python -m http.server` or `php -S localhost:8000` will do, but you cannot use the interactive WSGI scripts (see below) in this case.
 
-To bundle for production, run `npm run build`.
+For production, run `npm run build`, which will build an optimized javascript bundle in the directory `bundle`.
 
 ### WSGI scripts
 
-There are some python scripts in `wsgi` which generate useful analysis outputs such as cross sections or soundings dynamically from WRF output files.
-To use them, you have to configure your web server accordingly.
+There are some Python scripts in `wsgi`, which generate useful analysis outputs such as cross sections or soundings dynamically from WRF output files.
+To use them in production, you have to configure your web server accordingly.
 Refer to the Readme in `wsgi`.
-
-If you do not want to use this feature, comment out the corresponding buttons in the RASP control.
