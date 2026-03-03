@@ -15,8 +15,10 @@ L.Control.DatetimeSelector = L.Control.extend({
         this._container.style.borderStyle = "none";
         L.DomEvent.disableClickPropagation(this._container);
         L.DomEvent.disableScrollPropagation(this._container);
-        var modelDayTimeDiv = L.DomUtil.create('div', 'd-flex justify-content-center', this._container);
-        var modelDayGroup = L.DomUtil.create('div', '', modelDayTimeDiv);
+        var modelDayTimeDiv = L.DomUtil.create('div', 'd-flex flex-wrap', this._container);
+        modelDayTimeDiv.style.marginBottom = '-0.25rem';
+        var modelDayGroup = L.DomUtil.create('div', 'me-1', modelDayTimeDiv);
+        modelDayGroup.style.marginBottom = '0.25rem';
         this.modelDaySelect = L.DomUtil.create('select', 'form-select w-auto', modelDayGroup);
         this.modelDaySelect.title = dict("modelDaySelect_title");
         this.modelDaySelect.onchange = () => {
@@ -25,7 +27,8 @@ L.Control.DatetimeSelector = L.Control.extend({
             var event = new CustomEvent('modelDayChange', { detail: data });
             this._raspControl.dispatchEvent(event);
         };
-        var timeGroup = L.DomUtil.create('div', 'input-group ms-1 w-auto rounded', modelDayTimeDiv);
+        var timeGroup = L.DomUtil.create('div', 'input-group w-auto rounded', modelDayTimeDiv);
+        timeGroup.style.marginBottom = '0.25rem';
         timeGroup.style.backgroundColor = "rgba(255, 255, 255, 1)";
         this.timePrevButton = L.DomUtil.create('button', 'btn btn-outline-secondary', timeGroup);
         this.timePrevButton.innerHTML = '◄';

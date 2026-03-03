@@ -63,7 +63,7 @@ var SkewT = function(div) {
     var barbsize = 20;
     // functions for Scales and axes. Note the inverted domain for the y-scale: bigger is up!
     var bisectTemp = d3.bisector(function(d) { return d.press; }).left; // bisector function for tooltips
-    var w, h, tan, x, y, cloudScale, windScale, xAxis, yAxis, cloudAxis, windAxis;
+    var w, h, tan, x, y, cloudScale, cloudWaterScale, windScale, xAxis, yAxis, cloudAxis, cloudWaterAxis, windAxis;
     var data = [];
 
     var svg = wrapper.append("svg").attr("id", "svg"); // main svg
@@ -81,13 +81,15 @@ var SkewT = function(div) {
         w = width - margin.left - margin.right;
         h = height - margin.top - margin.bottom;
         tan = h / w * 2;
-        x = d3.scaleLinear().range([0, 14*w/15]).domain([-35,50]);
+        x = d3.scaleLinear().range([0, 14*w/15]).domain([-35,49]);
         y = d3.scaleLog().range([0, h]).domain([topp, basep]);
         cloudScale = d3.scaleLinear().range([0, w/6]).domain([0, 1]);
+        cloudWaterScale = d3.scaleLinear().range([0, w/6]).domain([0, 1]);
         windScale = d3.scaleLinear().range([7 * w / 8, w]).domain([0, 50]);
         xAxis = d3.axisBottom(x).tickSize(0,0).ticks(10);
         yAxis = d3.axisLeft(y).tickSize(0,0).tickValues(plines).tickFormat(d3.format(".0d"));
         cloudAxis = d3.axisTop(cloudScale).tickSize(0,0).tickValues([0, 0.5, 1]);
+        cloudWaterAxis = d3.axisBottom(cloudWaterScale).tickSize(0,0).tickValues([0.5, 1]);
         windAxis = d3.axisTop(windScale).tickSize(0,0).tickValues([0, 20, 40]);
     }
 
@@ -196,6 +198,7 @@ var SkewT = function(div) {
             skewtbg.append("text").attr("font-size", 10).attr("fill", "#380").attr("text-anchor", "middle").attr("x", textx).attr("y", texty).attr("transform", `rotate(-45 ${textx} ${texty})`).text(mixingRatio);
             isohumes.push(isoh);
         }
+        skewtbg.append("text").attr("font-size", 10).attr("fill", "#380").attr("text-anchor", "start").attr("x", textx + 7).attr("y", texty).text("g/kg");
 
         // Draw dry adiabats
         skewtbg.selectAll("dryadiabatline")
@@ -228,7 +231,7 @@ var SkewT = function(div) {
             .attr("clip-path", "url(#clipper)")
             .attr("d", skewline("temp"));
 
-        // Line along right edge of plot
+        // Line along wind barbs
         skewtbg.append("line")
             .attr("x1", 7 * w / 8 - 0.5)
             .attr("x2", 7 * w / 8 - 0.5)
@@ -244,7 +247,9 @@ var SkewT = function(div) {
         skewtbg.append("g").attr("transform", "translate(-0.5,0)").call(yAxis);
         skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "middle").attr("transform", "rotate(270)").attr("y", -28).attr("x", -h/2).text("p (hPa)");
         skewtbg.append("g").call(cloudAxis);
-        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "middle").attr("x", w/12).attr("y", -13).text("cloud fraction");
+        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "start").attr("x", 5).attr("y", -13).text("cloud fraction");
+        skewtbg.append("g").call(cloudWaterAxis).selectAll("text").style("fill", "#380");
+        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "start").attr("x", 5).attr("y", 20).style("fill", "#380").text("cloud water");
         skewtbg.append("g").call(windAxis);
         skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "middle").attr("x", 15 * w / 16).attr("y", -13).text("v (m/s)");
     };
@@ -357,6 +362,19 @@ var SkewT = function(div) {
             .style("opacity", "0.5")
             .attr("clip-path", "url(#clipper)")
             .attr("d", cloudArea);
+
+        var cloudWaterPath = d3.line()
+            .curve(d3.curveMonotoneY)
+            .x(function(d, i) { return cloudWaterScale(d.qcloud);})
+            .y(function(d, i) { return y(d.press); } );
+
+        var cloudWaterLine = skewtgroup.selectAll("cloudwaterlines")
+            .data(skewtlines).enter().append("path")
+            .style("fill", "none")
+            .style("stroke", "#380")
+            .style("stroke-width", "1")
+            .attr("clip-path", "url(#clipper)")
+            .attr("d", cloudWaterPath);
 
         //mouse over
         drawToolTips(skewtlines[0]);

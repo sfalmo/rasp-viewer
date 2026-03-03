@@ -9,6 +9,7 @@ L.RaspRendererPlotty = L.Class.extend({
         this.workingCanvas = document.createElement("canvas");
 
         // Color scales
+        this.numberFormat = new Intl.NumberFormat(document.documentElement.lang);
         this.scaleUnit = scale.getElementsByClassName("scaleUnit")[0];
         this.scaleMax = scale.getElementsByClassName("scaleMax")[0];
         this.scaleCanvasContainer = scale.getElementsByClassName("scaleColorbar")[0];
@@ -29,7 +30,7 @@ L.RaspRendererPlotty = L.Class.extend({
             clampLow: true,
             clampHigh: true,
             noDataValue: -999999,
-            colorScale: 'rasp',
+            colorScale: 'turbo',
             useWebGL: true
         });
     },
@@ -47,12 +48,12 @@ L.RaspRendererPlotty = L.Class.extend({
         if (options.domain) {
             this.plottyplot.setDomain(options.domain);
         }
-        this.plottyplot.setColorScale(options.colorscale ? options.colorscale : 'rasp'); // Default to rasp
+        this.plottyplot.setColorScale(options.colorscale ? options.colorscale : 'turbo');
         this.plottyplot.render();
         if (!options.append) {
             this.targetCanvas.width = this.workingCanvas.width;
             this.targetCanvas.height = this.workingCanvas.height;
-            this._updateScale(options.domain, options.unit);
+            this._updateScale(options.domain, options.unit, options.mult);
         }
         this.targetCanvas.getContext('2d').drawImage(this.workingCanvas, 0, 0);
     },
@@ -66,11 +67,14 @@ L.RaspRendererPlotty = L.Class.extend({
             this.plottyplot.setData(data[layer][0], data.width, data.height);
         }
     },
-    _updateScale: function(domain, unit) {
-        this._renderScale(domain, unit);
-        this._updateScaleAnnotation(domain[0], domain[1], unit);
+    _updateScale: function(domain, unit, mult) {
+        this._renderScale(domain);
+        if (!mult) {
+            mult = 1;
+        }
+        this._updateScaleAnnotation(domain[0] / mult, domain[1] / mult, unit);
     },
-    _renderScale: function(domain, unit) {
+    _renderScale: function(domain) {
         let colorScaleCanvas = this.plottyplot.colorScaleCanvas;
         let colorScaleCtx = colorScaleCanvas.getContext('2d');
         let colorScaleData = colorScaleCtx.getImageData(0, 0, colorScaleCanvas.width, colorScaleCanvas.height);
@@ -92,15 +96,9 @@ L.RaspRendererPlotty = L.Class.extend({
     },
     _updateScaleAnnotation: function(min, max, scaleUnit) {
         this.scaleUnit.innerHTML = scaleUnit;
-        this.scaleMax.innerHTML = max;
-        this.scaleMin.innerHTML = min;
+        this.scaleMax.innerHTML = this.numberFormat.format(max);
+        this.scaleMin.innerHTML = this.numberFormat.format(min);
     },
-    // quantize: function(value) {
-    //     this.plottyplot.setExpression(`floor(dataset / ${value} + 0.5) * ${value}`);
-    // },
-    // unquantize: function() {
-    //     this.plottyplot.setExpression("");
-    // }
 });
 
 export default function(map, canvas, scale, options) {

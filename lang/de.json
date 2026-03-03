@@ -81,8 +81,8 @@
     "sfctemp.description": "Temperatur in 2m Höhe. Dieser Parameter kann gut mit der gemessenen tatsächlichen Temperatur verglichen werden, um die Genauigkeit des Simulationslaufes abzuschätzen. Bei deutlich niedrigeren vorherrschenden Temperaturen sind die thermischen Bedingungen i.A. schlechter als vorhergesagt.",
     "sfcdewpt.longname": "Taupunkt",
     "sfcdewpt.description": "Taupunkt in 2m Höhe. Wie auch die Temperatur kann dieser Parameter als Genauigkeitskriterium dienen. Bei niedrigeren tatsächlichen Werten als vorhergesagt ist eine geringere Wolkenentwicklung in der Grenzschicht zu erwarten.",
-    "mslpress.longname": "Luftdruck",
-    "mslpress.description": "Luftdruck (MSL)",
+    "mslpress.longname": "Luftdruck (MSL)",
+    "mslpress.description": "Luftdruck auf Meereshöhe.",
     "sfcwind0.longname": "Wind (2m)",
     "sfcwind0.description": "Windrichtung und -geschwindigkeit in 2m Höhe.",
     "sfcwind.longname": "Wind (10m)",
@@ -128,5 +128,6 @@
     "press.longname": "Druckhöhe",
     "press.description": "Windrichtung und -geschwindigkeit sowie Vertikalbewegung in gewählter Druckhöhe.",
     "pfd_tot.longname": "Potentielle Flugdistanz",
-    "pfd_tot.description": "Abschätzung der potentiellen Flugdistanz mit der Polare eines Discus mit 100kg Ballast."
+    "pfd_tot.description": "Abschätzung der potentiellen Flugdistanz mit der Polare eines Discus mit 100kg Ballast.",
+    "cldfra": "Bewölkungsgrad"
 }

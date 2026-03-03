@@ -67,7 +67,7 @@ L.CrosssectionControl = L.Class.extend({
         }
     },
     update: function() {
-        if (!this.isArmed || !this.points.length == 2) {
+        if (!this.isArmed || !(this.points.length == 2)) {
             return;
         }
         var {model, runDate, validDate, day, dir, time, datetimeUTC} = this._raspControl.datetimeSelector.get();
@@ -88,39 +88,59 @@ L.CrosssectionControl = L.Class.extend({
             })
             .then(buffer => {
                 // The incoming data is organized as follows:
-                // [height, width, levels..., terrain..., crosssectionData...]
+                // [height, width, levels..., terrain..., w_cross..., cldfra_cross...]
                 // where
                 // levels has length height
                 // terrain has length width
-                // crosssectionData has length height*width
+                // *_cross fields have length height*width
                 var array = new Int32Array(buffer);
                 var dims = array.subarray(0, 2);
                 var height = dims[0];
                 var width = dims[1];
-                var levels = array.subarray(2, height + 2);
-                var terrain = array.subarray(height + 2, height + 2 + width);
-                var crosssectionData = array.subarray(height + 2 + width);
+                var levels = array.subarray(2, 2 + height);
+                var terrain = array.subarray(2 + height, 2 + height + width);
+                var w_cross = Array.from(array.subarray(2 + height + width, 2 + height + width + height * width), x => x / 100);
+                var cldfra_cross = array.subarray(2 + height + width + height * width);
+                var w_cross_unflatten = unflatten(w_cross, {height, width});
+                var cldfra_cross_unflatten = unflatten(cldfra_cross, {height, width});
                 var distance = new Int32Array([...Array(width).keys()]); // dummy distance for now
 
-                var colorscaleType = "verticalmotion";
-                var colorscale = cColorscales[colorscaleType].values.map((e, i) => { return [e, cColorscales[colorscaleType].colors[i]]; });
+                var colorscale_w_cross = cColorscales["verticalmotion"].values.map((e, i) => { return [e, cColorscales["verticalmotion"].colors[i]]; });
+                var colorscale_cldfra_cross = cColorscales["clouds"].values.map((e, i) => { return [e, cColorscales["clouds"].colors[i]]; });
                 var plotlyData = [
                     {
                         // vertical motion
                         type: 'heatmap',
                         x: distance,
                         y: levels,
-                        z: unflatten(crosssectionData, {height, width}),
-                        zmin: -250,
-                        zmax: 250,
+                        z: w_cross_unflatten,
+                        customdata: cldfra_cross_unflatten,
+                        zmin: -2.5,
+                        zmax: 2.5,
                         zsmooth: 'best',
-                        colorscale: colorscale,
+                        colorscale: colorscale_w_cross,
                         colorbar: {
                             outlinewidth: 0,
-                            tickvals: [-250, 0, 250],
-                            title: "cm/s"
+                            tickvals: [-2.5, 2.5],
+                            title: {
+                                text: "m/s"
+                            }
                         },
-                        hovertemplate: '%{y:.0f}m, %{z}cm/s<extra></extra>'
+                        hovertemplate: '%{y:.0f}m<br>' + dict("parameterCategory_wave_title") + ': %{z}m/s,<br>' + dict('cldfra') + ': %{customdata}%<extra></extra>'
+                    },
+                    {
+                        // cloud fraction
+                        type: 'heatmap',
+                        x: distance,
+                        y: levels,
+                        z: cldfra_cross_unflatten,
+                        zmin: 0,
+                        zmax: 100,
+                        zsmooth: 'fast',
+                        opacity: 0.5,
+                        colorscale: colorscale_cldfra_cross,
+                        showscale: false,
+                        hoverinfo: 'skip',
                     },
                     {
                         // terrain
@@ -143,21 +163,32 @@ L.CrosssectionControl = L.Class.extend({
                     },
                     yaxis: {
                         automargin: true,
-                        rangemode: 'nonnegative'
+                        rangemode: 'nonnegative',
+                        title: {
+                            text: 'm'
+                        }
                     },
                     margin: {
                         t: 0,
                         b: 0,
                         l: 0,
                         r: 0
-                    }
+                    },
                 };
-                this._raspControl.currentPlot = {type: "crosssection"};
-                this._raspControl.updatePlot();
 
                 import('plotly.js/dist/plotly-cartesian').then(({ default: Plotly }) => {
-                    Plotly.newPlot('plotContent', plotlyData, plotlyLayout, {displayModeBar: false, responsive: true});
-		});
+                    var plotlyLocaleImport = document.documentElement.lang == 'de' ? import('plotly.js-locales/de') : Promise.reject();
+                    plotlyLocaleImport.then(({ default: locale }) => {
+                        Plotly.register(locale);
+                        Plotly.setPlotConfig({locale: 'de'});
+                    }).catch(() => {
+                        // ignore
+                    }).finally(() => {
+                        this._raspControl.currentPlot = {type: "crosssection"};
+                        this._raspControl.updatePlot();
+                        Plotly.newPlot('plotContent', plotlyData, plotlyLayout, {displayModeBar: false, responsive: true});
+                    });
+                });
             })
             .catch(err => {
                 this.crosssectionStatus.innerHTML = dict(err.message);

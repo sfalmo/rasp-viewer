@@ -6,10 +6,8 @@ L.Control.ValueIndicator = L.Control.extend({
         position: 'topleft'
     },
     initialize: function(scale, options) {
-        this.scaleUnit = scale.getElementsByClassName("scaleUnit")[0];
-        this.scaleMax = scale.getElementsByClassName("scaleMax")[0];
+        this.numberFormat = new Intl.NumberFormat(document.documentElement.lang);
         this.scaleCanvasContainer = scale.getElementsByClassName("scaleColorbar")[0];
-        this.scaleMin = scale.getElementsByClassName("scaleMin")[0];
         this.scaleIndicator = this.scaleCanvasContainer.getElementsByClassName("scaleIndicator")[0];
         this.hideScaleIndicator();
     },
@@ -23,17 +21,17 @@ L.Control.ValueIndicator = L.Control.extend({
         this._parameter.style.color = parameter ? 'black' : 'red';
         this._parameter.innerHTML = parameter ? parameter : dict("dataMissing");
     },
-    updateValue: function (value) {
-        if (value) {
+    updateValueText: function (valueText) {
+        if (valueText) {
             this._value.style.display = "inline";
-            this._value.innerHTML = value;
+            this._value.innerHTML = valueText;
         } else {
             this._value.style.display = "none";
         }
     },
-    updateScaleIndicator: function(value) {
+    updateScaleIndicator: function(value, domain, mult) {
         this.scaleIndicator.style.visibility = 'visible';
-        var posPercent = (value - this.scaleMin.innerHTML) / (this.scaleMax.innerHTML - this.scaleMin.innerHTML) * 100;
+        var posPercent = (value * mult - domain[0]) / (domain[1] - domain[0]) * 100;
         posPercent = Math.max(0, Math.min(100, posPercent));
         if (isLandscape()) {
             this.scaleIndicator.style.left = "0";
@@ -42,7 +40,7 @@ L.Control.ValueIndicator = L.Control.extend({
             this.scaleIndicator.style.bottom = "0";
             this.scaleIndicator.style.left = `${posPercent}%`;
         }
-        this.scaleIndicator.children[0].innerHTML = value;
+        this.scaleIndicator.children[0].innerHTML = this.numberFormat.format(value);
     },
     hideScaleIndicator: function() {
         this.scaleIndicator.style.visibility = 'hidden';

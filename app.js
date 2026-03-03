@@ -19,9 +19,6 @@ var map = L.map('map', {
     zoomDelta: 0.5,
     zoomSnap: 0
 });
-// Add default controls
-// L.control.scale({position: cDefaults.scaleLocation}).addTo(map);
-// L.control.zoom({position: cDefaults.zoomLocation}).addTo(map);
 
 aufwindeAttribution({position: 'bottomleft'}).addTo(map);
 
@@ -39,8 +36,8 @@ for (const overlay of cDefaults.overlays) {
 }
 
 // This sets up all RASP related controls and layers
-var rc = raspControl({position: cDefaults.RASPControlLocation}).addTo(map);
-L.control.layers(cLayers.baseLayers, cLayers.overlays, {position: cDefaults.layersLocation}).addTo(map);
+var rc = raspControl({position: 'topleft'}).addTo(map);
+L.control.layers(cLayers.baseLayers, cLayers.overlays, {position: 'topleft'}).addTo(map);
 
 // Leaflet needs this because the flexbox it is in does not evaluate to the right height at the beginning
 // Otherwise, bottom tiles are not loaded (because leaflet thinks they are outside of the viewport)

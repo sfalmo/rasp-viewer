@@ -27,8 +27,9 @@ L.RaspRendererWindbarbs = L.Class.extend({
     _doRender: function() {
         this.layerGroup.clearLayers();
         this.barbs = [];
+        var iconSize = 60;
         var mapSize = this._map.getSize();
-        var stride = 120;
+        var stride = 100;
         var margin = Math.round(stride / 2);
         var xScaleFactor = this.data.width / (this.data.xmax - this.data.xmin);
         var yScaleFactor = this.data.height / (this.data.ymax - this.data.ymin);
@@ -44,11 +45,11 @@ L.RaspRendererWindbarbs = L.Class.extend({
                 var speed = this.data[this.layerSpeed][0][i * this.data.width + j];
                 var angle = this.data[this.layerAngle][0][i * this.data.width + j];
                 if (speed != this.data.noDataValue && angle != this.data.noDataValue) {
-                    var svg = this._getBarb(speed * 1.94384, angle, 80);
+                    var svg = this._getBarb(speed * 1.94384, angle, iconSize);
                     var divIcon = L.divIcon({
                         className: "leaflet-data-marker",
-                        iconSize: [80, 80],
-                        iconAnchor: [40, 40],
+                        iconSize: [iconSize, iconSize],
+                        iconAnchor: [iconSize / 2, iconSize / 2],
                         html: L.Util.template(svg)
                     });
                     this.barbs.push({position: latlng, icon: divIcon});

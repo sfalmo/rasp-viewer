@@ -75,6 +75,7 @@ L.Control.RASPControl = L.Control.extend({
         this.expand();
 		    L.DomEvent.disableClickPropagation(this._container);
 		    L.DomEvent.disableScrollPropagation(this._container);
+
         this._raspPanel = L.DomUtil.create('div', "leaflet-control-layers-list", this._container);
 
         var parameterDiv = L.DomUtil.create('div', 'mb-2', this._raspPanel);
@@ -111,7 +112,7 @@ L.Control.RASPControl = L.Control.extend({
         var opacityIconImg = L.DomUtil.create('img', 'me-2', opacityDiv);
         opacityIconImg.src = 'img/opacity.svg';
         opacityIconImg.title = dict("opacityIcon_title");
-        opacityIconImg.style.height = '1.5em';
+        opacityIconImg.style.height = '1.2rem';
         var opacitySlider = L.DomUtil.create('input', 'form-range', opacityDiv);
         opacitySlider.id = 'opacitySlider';
         opacitySlider.type = 'range';
@@ -172,11 +173,17 @@ L.Control.RASPControl = L.Control.extend({
         L.DomEvent.on(this._link, 'mouseenter', this.expand, this);
     },
     togglePanelOrOffcanvas: function() {
-        if (window.innerWidth < 768 && !this.isOffcanvas) {
-            this.toOffcanvas();
-        }
-        if (window.innerWidth > 768 && this.isOffcanvas) {
-            this.toPanel();
+        var mapContainer = this._map.getContainer();
+        if (mapContainer.offsetWidth < 500 || mapContainer.offsetHeight < 500) {
+            if (!this.isOffcanvas) {
+                this.toOffcanvas();
+                return;
+            }
+        } else {
+            if (this.isOffcanvas) {
+                this.toPanel();
+                return;
+            }
         }
     },
     expand: function () {
@@ -220,6 +227,15 @@ L.Control.RASPControl = L.Control.extend({
     modelDayChange: function() {
         var model = this.datetimeSelector.get().model;
         var dir = this.datetimeSelector.get().dir;
+
+        // fetch(cDefaults.forecastServerResults + "/OUT/" + dir + "/corners.json").then(response => {
+        //     return response.json();
+        // }).then(corners => {
+        //     this.raspLayer.renderCorners(corners);
+        // }).catch(() => {
+        //     this.raspLayer.hideCorners();
+        // });
+
         if (this.meteogramOverlay) {
             this.meteogramOverlay.remove();
         }
@@ -339,6 +355,7 @@ L.Control.RASPControl = L.Control.extend({
         this.currentPlot = null;
         this.crosssectionControl.clear();
         this.soundingControl.clear();
+        this.togglePanelOrOffcanvas();
     },
     updatePlot: function() {
         this.plot.style.display = "";
@@ -349,6 +366,7 @@ L.Control.RASPControl = L.Control.extend({
         }
         this.loadingPlot = false;
         this._hideLoadingAnimationMaybe();
+        this.togglePanelOrOffcanvas();
     },
     getMeteogramMarkers: function(modelKey) {
         var markers = [];

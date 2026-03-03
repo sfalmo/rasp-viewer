@@ -54,7 +54,11 @@ def crosssection(q, wrf_filename):
     w_cross = wrf.vertcross(w, h, levels=levels, missing=0, wrfin=wrf_file, start_point=cross_start, end_point=cross_end, meta=False)
     w_cross *= 100
     w_cross = np.rint(w_cross).astype(int)
-    return [levels, ter_line, w_cross]
+    cldfra = list(wrf.extract_vars(wrf_file, 0, "CLDFRA", meta=False).values())[0]
+    cldfra_cross = wrf.vertcross(cldfra, h, levels=levels, missing=0, wrfin=wrf_file, start_point=cross_start, end_point=cross_end, meta=False)
+    cldfra_cross *= 100
+    cldfra_cross = np.rint(cldfra_cross).astype(int)
+    return [levels, ter_line, w_cross, cldfra_cross]
 
 
 def application(environ, start_response):
@@ -83,8 +87,8 @@ def application(environ, start_response):
             start_response(status, response_headers)
             return [bytes(str(sounding_data).replace("'", "\""), encoding="utf-8")]
         elif kind == "crosssection":
-            levels, terrain, cross = crosssection(q, wrf_filename)
-            result = np.concatenate((np.array(cross.shape), levels, terrain, cross.flatten()), dtype=np.int32)
+            levels, terrain, w_cross, cldfra_cross = crosssection(q, wrf_filename)
+            result = np.concatenate((np.array(w_cross.shape), levels, terrain, w_cross.flatten(), cldfra_cross.flatten()), dtype=np.int32)
             status = "200 OK"
             response_headers = [("Content-type", "application/octet-stream")]
             start_response(status, response_headers)

@@ -83,7 +83,7 @@ const cColorscales = {
         values: [0.2999999, 0.3, 0.6999999, 0.7]
     },
     "clouds": {
-        colors: ["#ffffff", "#000000"],
+        colors: ["#ffffff00", "#000000ff"],
         values: [0, 1]
     },
     "clouds_low": {
@@ -116,10 +116,10 @@ const cCategories = ["thermal", "cloud", "wind", "wave", "general", "experimenta
 
 const cParameters = {
     // Thermal
-    "wstar":         { category: "thermal", "longname": dict("wstar.longname"),         "description": dict("wstar.description"), unit: "cm/s", domain: [0, 500] },
+    "wstar":         { category: "thermal", "longname": dict("wstar.longname"),         "description": dict("wstar.description"), unit: "m/s", domain: [0, 500], mult: 100 },
     "bsratio":       { category: "thermal", "longname": dict("bsratio.longname"),       "description": dict("bsratio.description"), unit: " ", domain: [0, 10] },
     "wstar_bsratio": { category: "thermal", "longname": dict("wstar_bsratio.longname"), "description": dict("wstar_bsratio.description"),
-                       composite: { of: ["wstar", "bsratio"], units: ["cm/s", " "], domains: [[0, 500], [0, 10]], type: "wstar_bsratio" }
+                       composite: { of: ["wstar", "bsratio"], units: ["cm/s", " "], domains: [[0, 500], [0, 10]], mults: [100, 1], type: "wstar_bsratio" }
                      },
     "hglider":       { category: "thermal", "longname": dict("hglider.longname"),       "description": dict("hglider.description"), unit: "m", domain: [0, 3000] },
     "dglider":       { category: "thermal", "longname": dict("dglider.longname"),       "description": dict("dglider.description"), unit: "m", domain: [0, 3000] },
@@ -128,7 +128,7 @@ const cParameters = {
     "hbl":           { category: "thermal", "longname": dict("hbl.longname"),           "description": dict("hbl.description"), unit: "m", domain: [0, 3000] },
     "dbl":           { category: "thermal", "longname": dict("dbl.longname"),           "description": dict("dbl.description"), unit: "m", domain: [0, 3000] },
     "bltopvariab":   { category: "thermal", "longname": dict("bltopvariab.longname"),   "description": dict("bltopvariab.description"), unit: "m", domain: [0, 2000] },
-    "wblmaxmin":     { category: "thermal", "longname": dict("wblmaxmin.longname"),     "description": dict("wblmaxmin.description"), unit: "cm/s", domain: [-250, 250], colorscale: "verticalmotion" },
+    "wblmaxmin":     { category: "thermal", "longname": dict("wblmaxmin.longname"),     "description": dict("wblmaxmin.description"), unit: "cm/s", domain: [-250, 250], mult: 100, colorscale: "verticalmotion" },
     "zwblmaxmin":    { category: "thermal", "longname": dict("zwblmaxmin.longname"),    "description": dict("zwblmaxmin.description"), unit: "m", domain: [0, 3000] },
     // Cloud
     "zsfclcldif":    { category: "cloud", "longname": dict("zsfclcldif.longname"),    "description": dict("zsfclcldif.description"), unit: "m", domain: [-1000, 1000], colorscale: "cloudpotential" },
@@ -168,7 +168,7 @@ const cParameters = {
     "rain1":         { category: "general", "longname": dict("rain1.longname"),         "description": dict("rain1.description"), unit: "mm/h", domain: [0, 10] },
     "cape":          { category: "general", "longname": dict("cape.longname"),          "description": dict("cape.description"), unit: "J/kg", domain: [0, 2000] },
     // Experimental
-    "pfd_tot":       { category: "experimental", "longname": dict("pfd_tot.longname"),       "description": dict("pfd_tot.description"), unit: "km", domain: [0, 1000], colorscale: "pfd" },
+    "pfd_tot":       { category: "experimental", "longname": dict("pfd_tot.longname"),       "description": dict("pfd_tot.description"), unit: "km", domain: [0, 1000] },
     "sfcsunpct":     { category: "experimental", "longname": dict("sfcsunpct.longname"),     "description": dict("sfcsunpct.description"), unit: "%", domain: [0, 100] },
     "sfcshf":        { category: "experimental", "longname": dict("sfcshf.longname"),        "description": dict("sfcshf.description"), unit: "W/m²", domain: [-50, 400] },
     "blicw":         { category: "experimental", "longname": dict("blicw.longname"),         "description": dict("blicw.description"), unit: "g", domain: [0, 100] },
@@ -193,8 +193,9 @@ for (const hPa of [950, 900, 850, 800, 750, 700, 600, 500]) {
         description: dict("press.description"),
         composite: {
             of: [`press${hPa}`, `press${hPa}wspd`, `press${hPa}wdir`],
-            units: ["cm/s", "m/s", "°"],
+            units: ["m/s", "m/s", "°"],
             domains: [[-250, 250], [0, 30]],
+            mults: [100, 1, 1],
             type: "press"
         }
     };
@@ -246,10 +247,6 @@ const cDefaults = {
     startHour: '1300',
     opacityLevel: 0.7,
     loadingAnimationDelay: 100,            // ms. Wait this long before showing a loading animation for the to-be-shown overlay
-    zoomLocation: 'bottomleft',            // Zoom control position
-    scaleLocation: 'bottomleft',           // Scale position
-    layersLocation: 'topleft',             // Layer selector position
-    RASPControlLocation: 'topleft',        // Position of custom RASP data control
     soundingMarker: 'img/sounding.svg',
     meteogramMarker: 'img/meteogram.svg',
     markerSize: 15

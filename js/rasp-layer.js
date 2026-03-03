@@ -42,14 +42,25 @@ L.RaspLayer = L.Layer.extend({
         this.plottyRenderer.hideScaleIndicator();
         this.valueIndicator.updateParameter(undefined);
     },
+    renderCorners: function(corners) {
+        this.cornersPolygon = L.polygon(corners, {color: 'black'}).addTo(this._map);
+    },
+    hideCorners: function(corners) {
+        if (this.cornersPolygon) {
+            this.cornersPolygon.remove();
+        }
+        this.cornersPolygon = undefined;
+    },
     update: function(georasters, parameter) {
         this.valid = true;
         if (parameter.composite) {
             this.units = parameter.composite.units;
             this.domains = parameter.composite.domains;
+            this.mults = parameter.composite.mults;
         } else {
             this.units = [parameter.unit];
             this.domains = [parameter.domain];
+            this.mults = [parameter.mult];
         }
         Promise.all(georasters.map(georaster => georaster.readRasters()))
             .then(data => {
@@ -64,10 +75,10 @@ L.RaspLayer = L.Layer.extend({
                 return georasters[0].fileDirectory.loadValue('GDAL_NODATA');
             })
 	    .then(noDataValue => {
-		this.data.noDataValue = Number(noDataValue.substring(0, noDataValue.length - 1));
-                this.valueIndicator.updateParameter(parameter.longname);
-                this._render(parameter);
-                this._updateValueIndicator(this._lastLat, this._lastLng);
+          this.data.noDataValue = Number(noDataValue.substring(0, noDataValue.length - 1));
+          this.valueIndicator.updateParameter(parameter.longname);
+          this._render(parameter);
+          this._updateValueIndicator(this._lastLat, this._lastLng);
 	    });
     },
     _render: function(parameter) {
@@ -75,11 +86,11 @@ L.RaspLayer = L.Layer.extend({
         this.overlay.setBounds([L.CRS.EPSG3857.unproject(L.point(this.data.xmin, this.data.ymin)), L.CRS.EPSG3857.unproject(L.point(this.data.xmax, this.data.ymax))]);
         // The base parameter is always displayed as a heatmap (currently realized via the plotty renderer)
         if (!parameter.composite) {
-            this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], colorscale: parameter.colorscale});
+            this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], mult: this.mults[0], colorscale: parameter.colorscale});
         } else {
             // For composite parameters, the additional fields must also be rendered according to the composite type
             if (parameter.composite.type == "wstar_bsratio") {
-                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0]});
+                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], mult: this.mults[0]});
                 this.plottyRenderer.render(this.data, 1, {domain: this.domains[1], unit: this.units[1], colorscale: 'bsratio', append: true});
             }
             if (parameter.composite.type == "wind") {
@@ -93,7 +104,7 @@ L.RaspLayer = L.Layer.extend({
                 this.plottyRenderer.render(this.data, 2, {domain: this.domains[2], unit: this.units[2], colorscale: 'clouds_high', append: true});
             }
             if (parameter.composite.type == "press") {
-                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], colorscale: 'verticalmotion'});
+                this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], mult: this.mults[0], colorscale: 'verticalmotion'});
                 this.windbarbRenderer.render(this.data, 1, 2);
             }
         }
@@ -117,17 +128,22 @@ L.RaspLayer = L.Layer.extend({
         var valueText = "";
         if (values.length != 0 && values[0] != this.data.noDataValue) {
             values.forEach((value, i) => {
-                if (i != 0) {
-                    valueText += ", ";
-                } else {
-                    this.valueIndicator.updateScaleIndicator(value);
+                var mult = 1;
+                if (this.mults && this.mults[i]) {
+                    mult = this.mults[i];
                 }
-                valueText += `${value} ${this.units[i]}`;
+                value = value / mult;
+                if (i != 0) {
+                    valueText += ",&nbsp;";
+                } else {
+                    this.valueIndicator.updateScaleIndicator(value, this.domains[0], mult);
+                }
+                valueText += `${this.valueIndicator.numberFormat.format(value)} ${this.units[i]}`;
             });
         } else {
             this.valueIndicator.hideScaleIndicator();
         }
-        this.valueIndicator.updateValue(valueText);
+        this.valueIndicator.updateValueText(valueText);
     },
     _onMouseMove: function(e) {
         if (this.valid && this.data) {
