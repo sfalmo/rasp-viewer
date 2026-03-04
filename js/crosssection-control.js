@@ -126,7 +126,7 @@ L.CrosssectionControl = L.Class.extend({
                                 text: "m/s"
                             }
                         },
-                        hovertemplate: '%{y:.0f}m<br>' + dict("parameterCategory_wave_title") + ': %{z}m/s,<br>' + dict('cldfra') + ': %{customdata}%<extra></extra>'
+                        hovertemplate: '%{y:.0f}m<br>' + dict("parameterCategory_wave_title") + ': %{z}m/s<br>' + dict('cldfra') + ': %{customdata}%<extra></extra>'
                     },
                     {
                         // cloud fraction

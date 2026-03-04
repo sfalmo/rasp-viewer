@@ -1,5 +1,5 @@
 import dict from '../lang.js';
-import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
+import { cModels, cParameters, cMeteograms, cLayers, cDefaults } from '../config.js';
 import { DateTime } from 'luxon';
 
 L.Control.DatetimeSelector = L.Control.extend({
@@ -76,10 +76,8 @@ L.Control.DatetimeSelector = L.Control.extend({
                 day += 1;
                 return fetchRecursive(runDate.minus({ days: 1 }), day);
             }
-            var logDir = cDefaults.forecastServerResults + "/LOG/" + modelKey + "/" + runDate.toISODate() + "/" + day;
-            return fetch(logDir + "/wrf.out", {
-                method: "HEAD",
-            }).then(response => {
+            var outDir = cDefaults.forecastServerResults + "/OUT/" + modelKey + "/" + runDate.toISODate() + "/" + day;
+            return fetch(outDir + "/parameters.json").then(response => {
                 if (response.ok) {
                     return {modelKey: modelKey, validDate: validDate, runDate: runDate, day: day};
                 } else {

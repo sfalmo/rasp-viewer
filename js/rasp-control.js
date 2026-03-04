@@ -1,5 +1,6 @@
 import dict from '../lang.js';
-import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
+import { cModels, cParameters, cMeteograms, cLayers, cDefaults } from '../config.js';
+import { press2height, press2FL } from './utils.js';
 import validIndicator from './valid-indicator.js';
 import datetimeSelector from './datetime-selector.js';
 import crosssectionControl from './crosssection-control.js';
@@ -81,8 +82,7 @@ L.Control.RASPControl = L.Control.extend({
         var parameterDiv = L.DomUtil.create('div', 'mb-2', this._raspPanel);
         this.parameterCategories = L.DomUtil.create('div', 'btn-group d-flex mb-1', parameterDiv);
         this.parameterCategories.setAttribute('data-bs-toggle', 'buttons');
-        var defaultCategory = cParameters[cDefaults.parameter].category;
-        for (const category of cCategories) {
+        for (const category in cParameters) {
             var catRadio = L.DomUtil.create('input', 'btn-check', this.parameterCategories);
             var catLabel = L.DomUtil.create('label', 'btn btn-outline-primary', this.parameterCategories);
             catRadio.name = "parameterCategory";
@@ -93,7 +93,7 @@ L.Control.RASPControl = L.Control.extend({
             catLabel.title = dict("parameterCategory_" + category + "_title");
             catRadio.id = catLabel.title;
             catLabel.htmlFor = catRadio.id;
-            if (category == defaultCategory) { // enable the default category
+            if (cDefaults.parameter in cParameters[category]) { // enable the default category
                 catRadio.checked = true;
             }
         }
@@ -102,6 +102,22 @@ L.Control.RASPControl = L.Control.extend({
         this.parameterSelect = L.DomUtil.create('select', 'form-select form-select-sm fw-bold my-1', parameterDiv);
         this.parameterSelect.onchange = () => { this.parameterChange(); };
         this.parameterSelect.title = dict("parameterSelect_title");
+        this.pressSliderInfo = L.DomUtil.create('div', '', parameterDiv);
+        this.pressSlider = L.DomUtil.create('input', 'form-range', parameterDiv);
+        this.pressSlider.id = 'pressSlider';
+        this.pressSlider.type = 'range';
+        this.pressSlider.title = dict('press.longname');
+        this.pressSlider.value = 0;
+        this.pressSlider.onchange = () => { this.parameterChange(); };
+        this.pressSliderDatalist = L.DomUtil.create('datalist', '', parameterDiv);
+        this.pressSliderDatalist.id = 'press_levels';
+        this.pressSlider.setAttribute('list', 'press_levels');
+        this.pressSlider.oninput = () => {
+            if (this.parameters && this.parameters.press_levels) {
+                var press = this.parameters.press_levels[this.pressSlider.value];
+                this.pressSliderInfo.innerHTML = dict("press.longname") + ": " + press + " hPa (≈ FL" + press2FL(press) + ", " + (Math.round(press2height(press, "m") / 10) * 10) + " m)";
+            }
+        };
         var parameterDetails = L.DomUtil.create('details', '', parameterDiv);
         var parameterSummary = L.DomUtil.create('summary', '', parameterDetails);
         parameterSummary.title = dict("parameterDetails_title");
@@ -196,12 +212,10 @@ L.Control.RASPControl = L.Control.extend({
             L.DomUtil.removeClass(this._container, 'leaflet-control-layers-expanded');
         }
     },
-    getDataUrls: function(modelDir, parameterKey, time) {
-        var baseUrls = [cDefaults.forecastServerResults + "/OUT/" + modelDir + "/" + parameterKey + "."]; // Default (no composite parameter)
-        if (cParameters[parameterKey].composite) {
-            baseUrls = cParameters[parameterKey].composite.of.map(key => cDefaults.forecastServerResults + "/OUT/" + modelDir + "/" + key + ".");
-        }
-        if (parameterKey != "pfd_tot") { // Almost all parameters are time-dependent, PFD being the exception
+    getDataUrls: function(modelDir, parameterKey, parameter, time) {
+        var parameterKeys = parameter.composite ? parameter.composite.of : [parameterKey];
+        var baseUrls = parameterKeys.map(key => cDefaults.forecastServerResults + "/OUT/" + modelDir + "/" + key + ".");
+        if (parameterKeys[0] != "pfd_tot") { // Almost all parameters are time-dependent, PFD being the exception
             baseUrls = baseUrls.map(base => base + "curr."+time+"lst.d2.");
         }
         var geotiffUrls = baseUrls.map(base => base + "data.tiff");
@@ -211,51 +225,87 @@ L.Control.RASPControl = L.Control.extend({
     getParameterCategory: function() {
         return this.parameterCategories.querySelector("input:checked").value;
     },
-    doParameterList: function() {
-        var currentParameter = this.parameterSelect.value;
-        this.parameterSelect.options.length = 0; // Clear all parameters
+    getParameterKey: function() {
         var category = this.getParameterCategory();
-        for (const parameter of cModels[this.datetimeSelector.get().model].parameters) {
-            if (cParameters[parameter].category == category) {
-                this.parameterSelect.add(new Option(cParameters[parameter].longname, parameter));
-                if (!currentParameter && parameter == cDefaults.parameter || parameter == currentParameter) {
-                    this.parameterSelect.options[this.parameterSelect.options.length - 1].selected = true;
-                }
-            }
+        if (typeof cParameters[category] === "function") {
+            return Object.keys(cParameters[category](this.parameters.press_levels[this.pressSlider.value]))[0];
         }
+        return this.parameterSelect.value;
+    },
+    getParameter: function() {
+        var category = this.getParameterCategory();
+        var parameterKey = this.getParameterKey();
+        if (typeof cParameters[category] === "function") {
+            return cParameters[category](this.parameters.press_levels[this.pressSlider.value])[parameterKey];
+        }
+        return cParameters[category][parameterKey];
     },
     modelDayChange: function() {
         var model = this.datetimeSelector.get().model;
         var dir = this.datetimeSelector.get().dir;
 
-        // fetch(cDefaults.forecastServerResults + "/OUT/" + dir + "/corners.json").then(response => {
-        //     return response.json();
-        // }).then(corners => {
-        //     this.raspLayer.renderCorners(corners);
-        // }).catch(() => {
-        //     this.raspLayer.hideCorners();
-        // });
-
-        if (this.meteogramOverlay) {
-            this.meteogramOverlay.remove();
-        }
-        this.meteogramOverlay = this.getMeteogramMarkers(model);
-        this.toggleMeteograms();
-        this.doParameterList(); // could have different parameters
-        this.parameterCategoryChange();
-        if (this.currentPlot && this.currentPlot.type == "meteogram") {
-            this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + this.currentPlot.key + ".png";
-            this.currentPlot.image.src = this.currentPlot.imageUrl;
-        }
+        fetch(cDefaults.forecastServerResults + "/OUT/" + dir + "/parameters.json").then(response => {
+            return response.json();
+        }).then(parameters => {
+            this.parameters = parameters;
+            this.parameters.available = new Set(this.parameters.parameters);
+            if (this.model != model) {
+                this._map.fitBounds(this.parameters.boundary, { padding: [20, 20] });
+            }
+            this.model = model;
+            this.pressSliderDatalist.innerHTML = '';
+            for (const press of this.parameters.press_levels) {
+                this.pressSliderDatalist.innerHTML += `<option value="${press}"></option>`;
+            }
+            this.parameterCategoryChange();
+            this.raspLayer.renderBoundary(this.parameters.boundary);
+            if (this.meteogramOverlay) {
+                this.meteogramOverlay.remove();
+            }
+            this.meteogramOverlay = this.getMeteogramMarkers(model);
+            this.toggleMeteograms();
+            this.parameterCategoryChange();
+            if (this.currentPlot && this.currentPlot.type == "meteogram") {
+                this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + this.currentPlot.key + ".png";
+                this.currentPlot.image.src = this.currentPlot.imageUrl;
+            }
+        }).catch((e) => {
+            console.log(e);
+            this.raspLayer.hideBoundary();
+        });
     },
     parameterCategoryChange: function() {
         var category = this.getParameterCategory();
         this.parameterCategoryDescription.innerHTML = dict("parameterCategory_" + category + "_title");
-        this.doParameterList();
+        var currentParameterKey = this.getParameterKey();
+        this.parameterSelect.options.length = 0; // Clear all parameters
+        if (typeof cParameters[category] === "function") {
+            this.parameterSelect.style.display = "none";
+            this.pressSlider.style.display = "block";
+            this.pressSliderInfo.style.display = "block";
+            this.pressSlider.min = 0;
+            this.pressSlider.max = this.parameters.press_levels.length - 1;
+            this.pressSlider.step = 1;
+            this.pressSlider.oninput();
+        } else {
+            this.parameterSelect.style.display = "block";
+            this.pressSlider.style.display = "none";
+            this.pressSliderInfo.style.display = "none";
+            for (const parameterKey in cParameters[category]) {
+                var parameter = cParameters[category][parameterKey];
+                var required = parameter.composite ? parameter.composite.of : [parameterKey];
+                if (required.reduce((g, r) => g && this.parameters.available.has(r), true)) { // check if we have all parameters that we need
+                    this.parameterSelect.add(new Option(cParameters[category][parameterKey].longname, parameterKey));
+                    if (!currentParameterKey && parameterKey == cDefaults.parameter || parameterKey == currentParameterKey) {
+                        this.parameterSelect.options[this.parameterSelect.options.length - 1].selected = true;
+                    }
+                }
+            }
+        }
         this.parameterChange();
     },
     parameterChange: function() {
-        this.parameterDescription.innerHTML = cParameters[this.parameterSelect.value].description;
+        this.parameterDescription.innerHTML = this.getParameter().description;
         this.update();
     },
     _loading: function() {
@@ -275,9 +325,10 @@ L.Control.RASPControl = L.Control.extend({
     },
     update: function() {
         var {model, runDate, day, time, dir} = this.datetimeSelector.get();
-        var parameterKey = this.parameterSelect.value;
-        var parameter = cParameters[parameterKey];
-        var urls = this.getDataUrls(dir, parameterKey, time);
+        var category = this.getParameterCategory();
+        var parameterKey = this.getParameterKey();
+        var parameter = this.getParameter();
+        var urls = this.getDataUrls(dir, parameterKey, parameter, time);
         this._updateBlipmap(urls.geotiffUrls, parameter);
         this._updateMeta(urls.metaUrl, parameter.longname, day);
     },

@@ -69,7 +69,7 @@ L.RaspRendererWindbarbs = L.Class.extend({
     },
     _getBarb: function(speedKt, angle, size) {
         var flagPath = speedKt > 0 ? this.windbarbSvgPaths[Math.round(speedKt / 5)] : "";
-        var svg = `<svg width="${size}" height="${size}" viewBox="0 0 40 40" transform='rotate(${angle})'><path stroke="#000" stroke-width="1" d='${flagPath}'/></svg>`;
+        var svg = `<svg width="${size}" height="${size}" viewBox="0 0 40 40" transform='rotate(${angle})'><circle cx="20" cy="20" r="1"></circle><path stroke="#000" stroke-width="1" d='${flagPath}'/></svg>`;
         return svg;
     }
 });

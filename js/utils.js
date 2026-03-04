@@ -16,4 +16,22 @@ function unflatten(valuesInOneDimension, size) {
     return valuesInTwoDimensions;
 }
 
-export { isLandscape, unflatten };
+function press2height(hPa, unit="ft") {
+    var result = (1 - Math.pow(hPa / 1013.25, 0.190284)) * 145366.45;
+    if (unit == "m") {
+        return result * 0.3048;
+    }
+    return result;
+}
+
+function press2FL(hPa) {
+    const feet = press2height(hPa, "ft");
+    const fl = Math.round(feet / 100);
+    let flString = fl.toString();
+    while (flString.length < 3) {
+        flString = "0" + flString;
+    }
+    return flString;
+}
+
+export { isLandscape, unflatten, press2height, press2FL };

@@ -119,7 +119,7 @@
     "cfracm.description": "Cloud cover of mid height clouds between 2000m AGL and 6000m AGL.",
     "cfrach.longname": "Cloud Cover - High",
     "cfrach.description": "Cloud cover of high clouds above 6000m AGL.",
-    "clouds.longname": "Cloud Cover - Total",
+    "clouds.longname": "Cloud Cover - Composite",
     "clouds.description": "Composite of low (red), mid (green) and high (blue) clouds.",
     "rain1.longname": "Rain",
     "rain1.description": "Percipitation per hour.",
@@ -129,5 +129,6 @@
     "press.description": "Wind velocity and direction as well as collective vertical movement in selected pressure level.",
     "pfd_tot.longname": "Potential Flight Distance",
     "pfd_tot.description": "Estimate of a potential flight distance using the polar of a Discus with 100kg ballast.",
-    "cldfra": "Cloud Fraction"
+    "cldfra": "Cloud Fraction",
+    "Donate": "Donate"
 }

@@ -8,15 +8,15 @@ document.title = dict("forecastTitle");
 
 // Create the map
 var map = L.map('map', {
-    center: cModels[cDefaults.model].center,
+    center: [50.2, 11.2], // need to set some default, actual center will be determined from model parameters
     attributionControl: false,
     zoom: cDefaults.zoom,
     minZoom: cDefaults.minZoom,
     maxZoom: cDefaults.maxZoom,
     zoomControl: false,
     doubleClickZoom: false,
-    wheelPxPerZoomLevel: 120,
-    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 60,
+    zoomDelta: 1.0,
     zoomSnap: 0
 });
 

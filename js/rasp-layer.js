@@ -1,4 +1,4 @@
-import { cModels , cCategories , cParameters , cMeteograms , cLayers , cDefaults } from '../config.js';
+import { cModels, cParameters, cMeteograms, cLayers, cDefaults } from '../config.js';
 import valueIndicator from './value-indicator.js';
 import raspRendererPlotty from './rasp-renderer-plotty.js';
 import raspRendererWindbarbs from './rasp-renderer-windbarbs.js';
@@ -16,7 +16,7 @@ L.RaspLayer = L.Layer.extend({
         this.canvas = document.createElement('canvas');
         this.overlay = L.imageOverlay(this.canvas.toDataURL(), [[0,1], [0,1]]).addTo(this._map);
         this.scale = document.getElementById("scale");
-        this.windbarbs = L.layerGroup([], {pane: 'shadowPane'}).addTo(this._map);
+        this.windbarbs = L.layerGroup([], {pane: 'overlayPane'}).addTo(this._map);
 
         // Renderers
         this.plottyRenderer = raspRendererPlotty(this._map, this.canvas, this.scale);
@@ -34,7 +34,6 @@ L.RaspLayer = L.Layer.extend({
     setOpacity: function(opacity) {
         this.opacityLevel = opacity;
         this._map.getPane('overlayPane').style.opacity = opacity;
-        this._map.getPane('shadowPane').style.opacity = opacity;
     },
     invalidate: function() {
         this.valid = false;
@@ -42,14 +41,14 @@ L.RaspLayer = L.Layer.extend({
         this.plottyRenderer.hideScaleIndicator();
         this.valueIndicator.updateParameter(undefined);
     },
-    renderCorners: function(corners) {
-        this.cornersPolygon = L.polygon(corners, {color: 'black'}).addTo(this._map);
+    renderBoundary: function(boundary) {
+        this.boundaryPolygon = L.polygon(boundary, {color: 'black', weight: 2, opacity: 0.5, fill: false, dashArray: '4', smoothFactor: 0.99, interactive: false, pane: 'shadowPane'}).addTo(this._map);
     },
-    hideCorners: function(corners) {
-        if (this.cornersPolygon) {
-            this.cornersPolygon.remove();
+    hideBoundary: function(boundary) {
+        if (this.boundaryPolygon) {
+            this.boundaryPolygon.remove();
         }
-        this.cornersPolygon = undefined;
+        this.boundaryPolygon = undefined;
     },
     update: function(georasters, parameter) {
         this.valid = true;
