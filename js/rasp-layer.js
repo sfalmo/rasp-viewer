@@ -1,4 +1,4 @@
-import { cModels, cParameters, cMeteograms, cLayers, cDefaults } from '../config.js';
+import { cModels, cColorscales, cParameters, cMeteograms, cLayers, cDefaults } from '../config.js';
 import valueIndicator from './value-indicator.js';
 import raspRendererPlotty from './rasp-renderer-plotty.js';
 import raspRendererWindbarbs from './rasp-renderer-windbarbs.js';
@@ -10,13 +10,16 @@ L.RaspLayer = L.Layer.extend({
     onAdd: function(map) {
         this._map = map;
 
+        this._map.createPane('windbarbPane');
+        this._map.getPane('windbarbPane').style.zIndex = 401; // overlayPane is 400 by default
+
         this.opacityLevel = cDefaults.opacityLevel;
         this.setOpacity(this.opacityLevel);
 
         this.canvas = document.createElement('canvas');
         this.overlay = L.imageOverlay(this.canvas.toDataURL(), [[0,1], [0,1]]).addTo(this._map);
         this.scale = document.getElementById("scale");
-        this.windbarbs = L.layerGroup([], {pane: 'overlayPane'}).addTo(this._map);
+        this.windbarbs = L.layerGroup([], {pane: 'windbarbPane'}).addTo(this._map);
 
         // Renderers
         this.plottyRenderer = raspRendererPlotty(this._map, this.canvas, this.scale);
@@ -34,11 +37,11 @@ L.RaspLayer = L.Layer.extend({
     setOpacity: function(opacity) {
         this.opacityLevel = opacity;
         this._map.getPane('overlayPane').style.opacity = opacity;
+        this._map.getPane('windbarbPane').style.opacity = opacity;
     },
     invalidate: function() {
         this.valid = false;
         this.setOpacity(0);
-        this.plottyRenderer.hideScaleIndicator();
         this.valueIndicator.updateParameter(undefined);
     },
     renderBoundary: function(boundary) {
@@ -84,6 +87,7 @@ L.RaspLayer = L.Layer.extend({
         this.windbarbRenderer.clear();
         this.overlay.setBounds([L.CRS.EPSG3857.unproject(L.point(this.data.xmin, this.data.ymin)), L.CRS.EPSG3857.unproject(L.point(this.data.xmax, this.data.ymax))]);
         // The base parameter is always displayed as a heatmap (currently realized via the plotty renderer)
+        this.valueIndicator.initScaleIndicators(1);
         if (!parameter.composite) {
             this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], mult: this.mults[0], colorscale: parameter.colorscale});
         } else {
@@ -101,6 +105,7 @@ L.RaspLayer = L.Layer.extend({
                 this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], colorscale: 'clouds_low', append: true});
                 this.plottyRenderer.render(this.data, 1, {domain: this.domains[1], unit: this.units[1], colorscale: 'clouds_mid', append: true});
                 this.plottyRenderer.render(this.data, 2, {domain: this.domains[2], unit: this.units[2], colorscale: 'clouds_high', append: true});
+                this.valueIndicator.initScaleIndicators(3, [cColorscales["clouds_low"].colors[1], cColorscales["clouds_mid"].colors[1], cColorscales["clouds_high"].colors[1]]);
             }
             if (parameter.composite.type == "press") {
                 this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], mult: this.mults[0], colorscale: 'verticalmotion'});
@@ -126,6 +131,7 @@ L.RaspLayer = L.Layer.extend({
         }
         var valueText = "";
         if (values.length != 0 && values[0] != this.data.noDataValue) {
+            this.valueIndicator.updateScaleIndicators(values, this.domains, this.mults);
             values.forEach((value, i) => {
                 var mult = 1;
                 if (this.mults && this.mults[i]) {
@@ -134,13 +140,11 @@ L.RaspLayer = L.Layer.extend({
                 value = value / mult;
                 if (i != 0) {
                     valueText += ",&nbsp;";
-                } else {
-                    this.valueIndicator.updateScaleIndicator(value, this.domains[0], mult);
                 }
                 valueText += `${this.valueIndicator.numberFormat.format(value)} ${this.units[i]}`;
             });
         } else {
-            this.valueIndicator.hideScaleIndicator();
+            this.valueIndicator.hideScaleIndicators();
         }
         this.valueIndicator.updateValueText(valueText);
     },

@@ -128,6 +128,16 @@ L.Control.DatetimeSelector = L.Control.extend({
             }
         }
     },
+    enableTimeControl: function() {
+        this.timePrevButton.disabled = false;
+        this.timeNextButton.disabled = false;
+        this.timeSelect.disabled = false;
+    },
+    disableTimeControl: function() {
+        this.timePrevButton.disabled = true;
+        this.timeNextButton.disabled = true;
+        this.timeSelect.disabled = true;
+    },
     timeChangeCyclic: function(direction) {
         // direction = +1 -> forward, direction = -1 -> backward
         var index = this.timeSelect.selectedIndex;

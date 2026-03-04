@@ -215,7 +215,7 @@ L.Control.RASPControl = L.Control.extend({
     getDataUrls: function(modelDir, parameterKey, parameter, time) {
         var parameterKeys = parameter.composite ? parameter.composite.of : [parameterKey];
         var baseUrls = parameterKeys.map(key => cDefaults.forecastServerResults + "/OUT/" + modelDir + "/" + key + ".");
-        if (parameterKeys[0] != "pfd_tot") { // Almost all parameters are time-dependent, PFD being the exception
+        if (!parameter.wholeDay) {
             baseUrls = baseUrls.map(base => base + "curr."+time+"lst.d2.");
         }
         var geotiffUrls = baseUrls.map(base => base + "data.tiff");
@@ -305,7 +305,12 @@ L.Control.RASPControl = L.Control.extend({
         this.parameterChange();
     },
     parameterChange: function() {
-        this.parameterDescription.innerHTML = this.getParameter().description;
+        var parameter = this.getParameter();
+        this.parameterDescription.innerHTML = parameter.description;
+        this.datetimeSelector.enableTimeControl();
+        if (parameter.wholeDay) {
+            this.datetimeSelector.disableTimeControl();
+        }
         this.update();
     },
     _loading: function() {

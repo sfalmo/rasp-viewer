@@ -8,8 +8,6 @@ L.Control.ValueIndicator = L.Control.extend({
     initialize: function(scale, options) {
         this.numberFormat = new Intl.NumberFormat(document.documentElement.lang);
         this.scaleCanvasContainer = scale.getElementsByClassName("scaleColorbar")[0];
-        this.scaleIndicator = this.scaleCanvasContainer.getElementsByClassName("scaleIndicator")[0];
-        this.hideScaleIndicator();
     },
     onAdd: function (map) {
         this._container = L.DomUtil.create('div', 'leaflet-control-attribution user-select-none');
@@ -29,21 +27,42 @@ L.Control.ValueIndicator = L.Control.extend({
             this._value.style.display = "none";
         }
     },
-    updateScaleIndicator: function(value, domain, mult) {
-        this.scaleIndicator.style.visibility = 'visible';
-        var posPercent = (value * mult - domain[0]) / (domain[1] - domain[0]) * 100;
-        posPercent = Math.max(0, Math.min(100, posPercent));
-        if (isLandscape()) {
-            this.scaleIndicator.style.left = "0";
-            this.scaleIndicator.style.bottom = `${posPercent}%`;
-        } else {
-            this.scaleIndicator.style.bottom = "0";
-            this.scaleIndicator.style.left = `${posPercent}%`;
+    initScaleIndicators: function(n, colors=["#000"]) {
+        for (const i in this.scaleIndicators) {
+            L.DomUtil.remove(this.scaleIndicators[i]);
         }
-        this.scaleIndicator.children[0].innerHTML = this.numberFormat.format(value);
+        this.scaleIndicators = [];
+        this.scaleIndicatorValues = [];
+        for (let i = 0; i < n; i += 1) {
+            var scaleIndicator = L.DomUtil.create('div', 'scaleIndicator', this.scaleCanvasContainer);
+            var scaleIndicatorValue = L.DomUtil.create('div', 'scaleIndicatorValue', scaleIndicator);
+            scaleIndicator.style.color = colors[i];
+            this.scaleIndicators.push(scaleIndicator);
+            this.scaleIndicatorValues.push(scaleIndicatorValue);
+        }
     },
-    hideScaleIndicator: function() {
-        this.scaleIndicator.style.visibility = 'hidden';
+    updateScaleIndicators: function(values, domains, mults) {
+        for (const i in this.scaleIndicators) {
+            const value = values[i];
+            const domain = domains[i];
+            const mult = mults === undefined || mults[i] === undefined ? 1 : mults[i];
+            this.scaleIndicators[i].style.visibility = 'visible';
+            var posPercent = (value - domain[0]) / (domain[1] - domain[0]) * 100;
+            posPercent = Math.max(0, Math.min(100, posPercent));
+            if (isLandscape()) {
+                this.scaleIndicators[i].style.left = "0";
+                this.scaleIndicators[i].style.bottom = `${posPercent}%`;
+            } else {
+                this.scaleIndicators[i].style.bottom = "0";
+                this.scaleIndicators[i].style.left = `${posPercent}%`;
+            }
+            this.scaleIndicatorValues[i].innerHTML = this.numberFormat.format(value / mult);
+        }
+    },
+    hideScaleIndicators: function() {
+        for (const i in this.scaleIndicators) {
+            this.scaleIndicators[i].style.visibility = 'hidden';
+        }
     },
 });
 

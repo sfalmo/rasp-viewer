@@ -62,7 +62,7 @@ L.RaspRendererWindbarbs = L.Class.extend({
                     pane: this.layerGroup.options.pane,
                     icon: barb.icon,
                     interactive: false,
-                    keyboard: false
+                    keyboard: false,
                 }));
             }
         });

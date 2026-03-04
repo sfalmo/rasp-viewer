@@ -120,7 +120,7 @@ const cParameters = {
         "cape":          { longname: dict("cape.longname"),          description: dict("cape.description"), unit: "J/kg", domain: [0, 2000] },
     },
     "experimental": {
-        "pfd_tot":       { longname: dict("pfd_tot.longname"),       description: dict("pfd_tot.description"), unit: "km", domain: [0, 1000] },
+        "pfd_tot":       { longname: dict("pfd_tot.longname"),       description: dict("pfd_tot.description"), unit: "km", domain: [0, 1000], wholeDay: true },
         "sfcsunpct":     { longname: dict("sfcsunpct.longname"),     description: dict("sfcsunpct.description"), unit: "%", domain: [0, 100] },
         "sfcshf":        { longname: dict("sfcshf.longname"),        description: dict("sfcshf.description"), unit: "W/m²", domain: [-50, 400] },
         "blicw":         { longname: dict("blicw.longname"),         description: dict("blicw.description"), unit: "g", domain: [0, 100] },
