@@ -6,7 +6,7 @@ L.Control.ValueIndicator = L.Control.extend({
         position: 'topleft'
     },
     initialize: function(scale, options) {
-        this.numberFormat = new Intl.NumberFormat(document.documentElement.lang);
+        this.numberFormat = new Intl.NumberFormat(document.documentElement.lang, { useGrouping: false });
         this.scaleCanvasContainer = scale.getElementsByClassName("scaleColorbar")[0];
     },
     onAdd: function (map) {
@@ -40,6 +40,7 @@ L.Control.ValueIndicator = L.Control.extend({
             this.scaleIndicators.push(scaleIndicator);
             this.scaleIndicatorValues.push(scaleIndicatorValue);
         }
+        this.hideScaleIndicators();
     },
     updateScaleIndicators: function(values, domains, mults) {
         for (const i in this.scaleIndicators) {

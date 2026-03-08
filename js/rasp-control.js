@@ -17,7 +17,6 @@ L.Control.RASPControl = L.Control.extend({
         iconSize: [cDefaults.markerSize, cDefaults.markerSize]
     }),
     onAdd: function(map) {
-        this.loadingAnimation.style.visibility = 'hidden';
         this._map = map;
         this._initPanel();
 
@@ -161,7 +160,7 @@ L.Control.RASPControl = L.Control.extend({
         this._collapseLink.innerHTML = '⇱';
         this._collapseLink.title = dict("Minimize panel");
         this._collapseLink.href = '#';
-        L.DomEvent.on(this._collapseLink, 'click', this.collapse, this);
+        L.DomEvent.on(this._collapseLink, 'click', () => { this.shallBeCollapsed = true; this.collapse(); }, this);
 
         this.togglePanelOrOffcanvas();
         window.addEventListener('resize', () => { this.togglePanelOrOffcanvas(); });
@@ -183,7 +182,9 @@ L.Control.RASPControl = L.Control.extend({
             offcanvas.hide();
         }
         this.isOffcanvas = false;
-        this.expand();
+        if (offcanvas || !this.shallBeCollapsed) {
+            this.expand();
+        }
         this._link.removeAttribute("data-bs-toggle");
         this._link.href = "#";
         L.DomEvent.on(this._link, 'mouseenter', this.expand, this);
@@ -204,6 +205,7 @@ L.Control.RASPControl = L.Control.extend({
     },
     expand: function () {
         if (!this.isOffcanvas) {
+            this.shallBeCollapsed = false;
             L.DomUtil.addClass(this._container, 'leaflet-control-layers-expanded');
         }
     },
@@ -269,8 +271,7 @@ L.Control.RASPControl = L.Control.extend({
                 this.currentPlot.imageUrl = cDefaults.forecastServerResults + "/OUT/" + dir + "/meteogram_" + this.currentPlot.key + ".png";
                 this.currentPlot.image.src = this.currentPlot.imageUrl;
             }
-        }).catch((e) => {
-            console.log(e);
+        }).catch(() => {
             this.raspLayer.hideBoundary();
         });
     },
@@ -338,7 +339,7 @@ L.Control.RASPControl = L.Control.extend({
         this._updateMeta(urls.metaUrl, parameter.longname, day);
     },
     _updateMeta: function(metaUrl, parameterLongname, day) {
-        fetch(metaUrl)
+        fetch(metaUrl + "?timestamp=" + this.parameters.timestamp)
             .then(response => {
                 if (response.ok) {
                     return response.json();
@@ -364,7 +365,7 @@ L.Control.RASPControl = L.Control.extend({
         this._armLoadingAnimation();
     },
     _updateBlipmap: function(geotiffUrls, parameter) {
-        Promise.all(geotiffUrls.map(url => fetch(url)))
+        Promise.all(geotiffUrls.map(url => fetch(url + "?timestamp=" + this.parameters.timestamp)))
             .then(responses => {
                 if (responses.every(response => response.ok)) {
                     return Promise.all(responses.map(response => response.arrayBuffer()));
@@ -440,6 +441,10 @@ L.Control.RASPControl = L.Control.extend({
                         this.currentPlot.image = new Image();
                         this.currentPlot.image.onload = () => {
                             this.updatePlot();
+                        };
+                        this.currentPlot.image.onerror = () => {
+                            this.loadingPlot = false;
+                            this._hideLoadingAnimationMaybe();
                         };
                         this.currentPlot.image.src = this.currentPlot.imageUrl;
                         this.loadingPlot = true;

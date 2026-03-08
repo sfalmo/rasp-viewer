@@ -24,15 +24,15 @@ const cColorscales = {
         values: [0, 1]
     },
     "clouds_low": {
-        colors: ["#ff000000", "#ff0000ff"],
+        colors: ["#045a8d00", "#045a8dff"],
         values: [0, 1]
     },
     "clouds_mid": {
-        colors: ["#00ff0000", "#00ff00ff"],
+        colors: ["#006d2c00", "#006d2cff"],
         values: [0, 1]
     },
     "clouds_high": {
-        colors: ["#0000ff00", "#0000ffff"],
+        colors: ["#b3000000", "#b30000ff"],
         values: [0, 1]
     },
     "cloudpotential": {

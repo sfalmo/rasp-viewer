@@ -9,7 +9,7 @@ L.RaspRendererPlotty = L.Class.extend({
         this.workingCanvas = document.createElement("canvas");
 
         // Color scales
-        this.numberFormat = new Intl.NumberFormat(document.documentElement.lang);
+        this.numberFormat = new Intl.NumberFormat(document.documentElement.lang, { useGrouping: false });
         this.scaleUnit = scale.getElementsByClassName("scaleUnit")[0];
         this.scaleMax = scale.getElementsByClassName("scaleMax")[0];
         this.scaleCanvasContainer = scale.getElementsByClassName("scaleColorbar")[0];

@@ -35,14 +35,21 @@ L.RaspLayer = L.Layer.extend({
         this._map.off('mousemove', this._onMouseMove, this);
     },
     setOpacity: function(opacity) {
-        this.opacityLevel = opacity;
+        if (opacity !== undefined) {
+            this.opacityLevel = opacity;
+        }
+        if (!this.valid) {
+            opacity = 0;
+        }
         this._map.getPane('overlayPane').style.opacity = opacity;
         this._map.getPane('windbarbPane').style.opacity = opacity;
     },
     invalidate: function() {
         this.valid = false;
-        this.setOpacity(0);
+        this.setOpacity(undefined);
         this.valueIndicator.updateParameter(undefined);
+        this.valueIndicator.updateValueText("");
+        this.valueIndicator.hideScaleIndicators();
     },
     renderBoundary: function(boundary) {
         this.boundaryPolygon = L.polygon(boundary, {color: 'black', weight: 2, opacity: 0.5, fill: false, dashArray: '4', smoothFactor: 0.99, interactive: false, pane: 'shadowPane'}).addTo(this._map);
