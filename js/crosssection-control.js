@@ -187,14 +187,14 @@ L.CrosssectionControl = L.Class.extend({
                         this._raspControl.currentPlot = {type: "crosssection"};
                         this._raspControl.updatePlot();
                         Plotly.newPlot('plotContent', plotlyData, plotlyLayout, {displayModeBar: false, responsive: true});
+                        this._raspControl.loadingPlot = false;
+                        this._raspControl._hideLoadingAnimationMaybe();
                     });
                 });
             })
             .catch(err => {
                 this.crosssectionStatus.innerHTML = dict(err.message);
                 this._raspControl.closePlot();
-            })
-            .finally(() => {
                 this._raspControl.loadingPlot = false;
                 this._raspControl._hideLoadingAnimationMaybe();
             });

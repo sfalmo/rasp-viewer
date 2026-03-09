@@ -28,14 +28,20 @@ L.RaspRendererWindbarbs = L.Class.extend({
         this.layerGroup.clearLayers();
         this.barbs = [];
         var iconSize = 60;
-        var mapSize = this._map.getSize();
         var stride = 100;
-        var margin = Math.round(stride / 2);
+        var mapSize = this._map.getSize();
+        var p0 = this._map.layerPointToLatLng([0, 0]);
+        var p1 = this._map.layerPointToLatLng([stride, stride]);
+        var dGrid = p1.lng - p0.lng;
+        var upperleft = this._map.containerPointToLatLng([0, 0]);
+        var lowerright = this._map.containerPointToLatLng([mapSize.x, mapSize.y]);
+        upperleft.lat = Math.round(upperleft.lat / dGrid) * dGrid;
+        upperleft.lng = Math.round(upperleft.lng / dGrid) * dGrid;
         var xScaleFactor = this.data.width / (this.data.xmax - this.data.xmin);
         var yScaleFactor = this.data.height / (this.data.ymax - this.data.ymin);
-        for (let xPixel = -margin; xPixel < mapSize.x + margin; xPixel += stride) {
-            for (let yPixel = -margin; yPixel < mapSize.y + margin; yPixel += stride) {
-                var latlng = this._map.containerPointToLatLng([xPixel, yPixel]);
+        for (let lat = upperleft.lat; lat > lowerright.lat; lat -= dGrid) {
+            for (let lng = upperleft.lng; lng < lowerright.lng; lng += dGrid) {
+                var latlng = {lat, lng};
                 var {x, y} = L.CRS.EPSG3857.project(latlng);
                 if (x < this.data.xmin || x > this.data.xmax || y < this.data.ymin || y > this.data.ymax) {
                     continue;
