@@ -1,6 +1,6 @@
-<h1 align="center">RASP Viewer</h1>
-<p align="center">A web app for visualizing RASP forecasts as seen on</p>
-<p align="center"><a href="https://aufwin.de/"><img src="img/logo.svg" alt="aufwin.de logo"></a></p>
+# RASP Viewer
+
+A web app for visualizing RASP forecasts as seen on [aufwin.de](https://aufwin.de).
 
 ## How do I get RASP forecasts?
 

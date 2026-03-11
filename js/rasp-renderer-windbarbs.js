@@ -30,17 +30,24 @@ L.RaspRendererWindbarbs = L.Class.extend({
         var iconSize = 60;
         var stride = 100;
         var mapSize = this._map.getSize();
-        var p0 = this._map.layerPointToLatLng([0, 0]);
-        var p1 = this._map.layerPointToLatLng([stride, stride]);
-        var dGrid = p1.lng - p0.lng;
+        var latlng0 = L.CRS.EPSG3857.unproject({x: this.data.xmin, y: this.data.ymin});
+        var layerPoint0 = this._map.latLngToLayerPoint(latlng0);
+        var latlng1 = this._map.layerPointToLatLng([layerPoint0.x + stride, layerPoint0.y + stride]);
+        var dlatGrid = latlng0.lat - latlng1.lat;
+        var dlngGrid = latlng1.lng - latlng0.lng;
+        var dlngRatio = dlngGrid / dlatGrid;
+        var log2dlatGrid = Math.log2(dlatGrid);
+        var log2dlngGrid = Math.log2(dlngGrid);
+        var dlatGridQuantized = Math.pow(2, Math.round(log2dlatGrid));
+        var dlngGridQuantized = Math.pow(2, Math.round(log2dlngGrid));
         var upperleft = this._map.containerPointToLatLng([0, 0]);
         var lowerright = this._map.containerPointToLatLng([mapSize.x, mapSize.y]);
-        upperleft.lat = Math.round(upperleft.lat / dGrid) * dGrid;
-        upperleft.lng = Math.round(upperleft.lng / dGrid) * dGrid;
+        upperleft.lat = Math.round(upperleft.lat / dlatGridQuantized) * dlatGridQuantized;
+        upperleft.lng = Math.round(upperleft.lng / dlngGridQuantized) * dlngGridQuantized;
         var xScaleFactor = this.data.width / (this.data.xmax - this.data.xmin);
         var yScaleFactor = this.data.height / (this.data.ymax - this.data.ymin);
-        for (let lat = upperleft.lat; lat > lowerright.lat; lat -= dGrid) {
-            for (let lng = upperleft.lng; lng < lowerright.lng; lng += dGrid) {
+        for (let lat = upperleft.lat; lat > lowerright.lat; lat -= dlatGridQuantized) {
+            for (let lng = upperleft.lng; lng < lowerright.lng; lng += dlngGridQuantized) {
                 var latlng = {lat, lng};
                 var {x, y} = L.CRS.EPSG3857.project(latlng);
                 if (x < this.data.xmin || x > this.data.xmax || y < this.data.ymin || y > this.data.ymax) {

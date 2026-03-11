@@ -185,6 +185,7 @@ body {
     max-width: 452px;
 }
 .rasp-control .leaflet-control-layers-toggle {
+    background-size: 26px 26px;
     background-image: url(img/rasp_control.svg);
 }
 .parameterCategoryIcon {
