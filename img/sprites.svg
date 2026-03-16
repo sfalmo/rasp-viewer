@@ -21,10 +21,13 @@
   <symbol xmlnsI="&amp;amp;#38;ns_ai;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="cloud">
     <path d="M25.674 8.428c-3.188 0-5.95 1.788-7.536 4.418-1.218-.862-2.662-1.402-4.24-1.402-3.691 0-6.716 2.8-7.496 6.434-3.593.2-6.433 3.227-6.433 6.842 0 3.71 2.974 7.001 6.797 7.001h26.406c3.809 0 6.797-3.262 6.797-7 0-3.229-2.281-6.026-5.338-6.682v-.002c0-5.228-3.96-9.609-8.957-9.609zm0 3c3.235 0 5.958 2.872 5.958 6.61 0 .307-.035.714-.073 1.056a1.5 1.5 0 00.225.97c.009.017.001.008.012.027.006.012.032.036.039.048a1.5 1.5 0 00.125.15c.057.079.08.14.193.236.062.052.2.057.287.104a1.5 1.5 0 00.197.073 1.5 1.5 0 00.004 0c.17.068.3.18.49.18a1.5 1.5 0 00.042-.001c2.065-.057 3.796 1.725 3.796 3.84 0 2.128-1.737 4-3.797 4H6.766c-2.046 0-3.797-1.924-3.797-4 0-2.13 1.696-3.88 3.797-3.88.45 0 .562-.007.574-.004A1.5 1.5 0 009.2 19.45c.13-2.863 2.26-5.006 4.696-5.006 1.447 0 2.656.643 3.543 1.784a1.5 1.5 0 002.61-.458c.838-2.577 3.051-4.342 5.624-4.342zm7.457 6.454c.006 0 .01.006.015.006-.02 0-.037-.006-.057-.005h.043z" color="currentColor" font-weight="400" font-family="sans-serif" overflow="visible" stroke-linejoin="round" iExtraneous="self" stroke-width="7.361" stroke-miterlimit="10"></path>
   </symbol>
-  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10.583 10.583" id="experimental">
-    <g color="currentColor" font-weight="400" font-family="sans-serif">
-      <path d="M4.895 2.646v5.291h.794v-5.29h-.794z" overflow="visible"></path>
-      <path d="M2.646 4.895v.794h5.291v-.794h-5.29z" overflow="visible"></path>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="interactive">
+    <g color="currentColor" stroke="currentColor" font-weight="400" font-family="sans-serif">
+      <path stroke-width="4" d="M 20,0 V 15"></path>
+      <path stroke-width="4" d="M 0,20 H 15"></path>
+      <path stroke-width="4" d="M 20,40 V 25"></path>
+      <path stroke-width="4" d="M 40,20 H 25"></path>
+      <circle cx="20" cy="20" r="1"></circle>
     </g>
   </symbol>
   <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10.583 10.583" id="general">

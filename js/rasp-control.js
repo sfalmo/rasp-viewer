@@ -88,7 +88,7 @@ L.Control.RASPControl = L.Control.extend({
             catRadio.type = "radio";
             catRadio.value = category;
             catLabel.style.cursor = "pointer";
-            catLabel.innerHTML += `<svg viewBox="0 0 12 12" class="parameterCategoryIcon"><use xlink:href="img/sprites.svg#${category}"></use></svg>`;
+            catLabel.innerHTML += `<svg viewBox="0 0 12 12" class="parameterCategoryIcon"><use href="img/sprites.svg#${category}" xlink:href="img/sprites.svg#${category}"></use></svg>`;
             catLabel.title = dict("parameterCategory_" + category + "_title");
             catRadio.id = catLabel.title;
             catLabel.htmlFor = catRadio.id;
@@ -136,12 +136,16 @@ L.Control.RASPControl = L.Control.extend({
         opacitySlider.oninput = (e) => { this.raspLayer.setOpacity(e.target.valueAsNumber / 100); };
 
         var interactiveDiv = L.DomUtil.create('div', 'mb-2', this._raspPanel);
-        this.crosssectionButton = L.DomUtil.create('button', 'btn btn-outline-primary me-2', interactiveDiv);
-        this.crosssectionButton.title = dict("crosssection");
+        var interactiveButtons = L.DomUtil.create('div', 'input-group', interactiveDiv);
+        var interactiveIcon = L.DomUtil.create('span', 'input-group-text bg-light', interactiveButtons);
+        interactiveIcon.innerHTML += `<svg viewBox="0 0 12 12" height="1.5rem" width="1.5rem"><use href="img/sprites.svg#interactive" xlink:href="img/sprites.svg#interactive"></use></svg>`;
+        interactiveIcon.title = dict("interactiveIcon_title");
+        this.crosssectionButton = L.DomUtil.create('button', 'btn btn-outline-primary', interactiveButtons);
         this.crosssectionButton.innerHTML = dict("crosssection");
-        this.soundingButton = L.DomUtil.create('button', 'btn btn-outline-primary', interactiveDiv);
-        this.soundingButton.title = dict("sounding");
+        this.crosssectionButton.title = dict("crosssection");
+        this.soundingButton = L.DomUtil.create('button', 'btn btn-outline-primary', interactiveButtons);
         this.soundingButton.innerHTML = dict("sounding");
+        this.soundingButton.title = dict("sounding");
         this.interactiveHelp = L.DomUtil.create('div', 'mt-1', interactiveDiv);
         this.interactiveStatus = L.DomUtil.create('div', 'text-danger', interactiveDiv);
         this.crosssectionControl = crosssectionControl(this);

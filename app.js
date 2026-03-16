@@ -30,6 +30,9 @@ logo.onAdd = function(map){
 };
 logo.addTo(map);
 
+map.createPane('airspacePane');
+map.getPane('airspacePane').style.zIndex = 402; // overlayPane is 400, windbarbPane is 401
+
 cLayers.baseLayers[cDefaults.baseLayer].addTo(map);
 for (const overlay of cDefaults.overlays) {
     cLayers.overlays[overlay].addTo(map);

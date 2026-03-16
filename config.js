@@ -67,6 +67,12 @@ const cParameters = {
         "zwblmaxmin":    { longname: dict("zwblmaxmin.longname"),    description: dict("zwblmaxmin.description"), unit: "m", domain: [0, 3000] },
     },
     "cloud": {
+        "clouds":        { longname: dict("clouds.longname"),        description: dict("clouds.description"),
+                           composite: { of: ["cfracl", "cfracm", "cfrach"], units: ["%", "%", "%"], domains: [[0, 100], [0, 100], [0, 100]], type: "clouds" }
+                         },
+        "cfracl":        { longname: dict("cfracl.longname"),        description: dict("cfracl.description"), unit: "%", domain: [0, 100], colorscale: "clouds" },
+        "cfracm":        { longname: dict("cfracm.longname"),        description: dict("cfracm.description"), unit: "%", domain: [0, 100], colorscale: "clouds" },
+        "cfrach":        { longname: dict("cfrach.longname"),        description: dict("cfrach.description"), unit: "%", domain: [0, 100], colorscale: "clouds" },
         "zsfclcldif":    { longname: dict("zsfclcldif.longname"),    description: dict("zsfclcldif.description"), unit: "m", domain: [-1000, 1000], colorscale: "cloudpotential" },
         "zsfclcl":       { longname: dict("zsfclcl.longname"),       description: dict("zsfclcl.description"), unit: "m", domain: [0, 3000] },
         "zsfclclmask":   { longname: dict("zsfclclmask.longname"),   description: dict("zsfclclmask.description"), unit: "m", domain: [0, 3000] },
@@ -74,12 +80,8 @@ const cParameters = {
         "zblcl":         { longname: dict("zblcl.longname"),         description: dict("zblcl.description"), unit: "m", domain: [0, 3000] },
         "zblclmask":     { longname: dict("zblclmask.longname"),     description: dict("zblclmask.description"), unit: "m", domain: [0, 3000] },
         "blcloudpct":    { longname: dict("blcloudpct.longname"),    description: dict("blcloudpct.description"), unit: "%", domain: [0, 100], colorscale: "clouds" },
-        "cfracl":        { longname: dict("cfracl.longname"),        description: dict("cfracl.description"), unit: "%", domain: [0, 100], colorscale: "clouds" },
-        "cfracm":        { longname: dict("cfracm.longname"),        description: dict("cfracm.description"), unit: "%", domain: [0, 100], colorscale: "clouds" },
-        "cfrach":        { longname: dict("cfrach.longname"),        description: dict("cfrach.description"), unit: "%", domain: [0, 100], colorscale: "clouds" },
-        "clouds":        { longname: dict("clouds.longname"),        description: dict("clouds.description"),
-                           composite: { of: ["cfracl", "cfracm", "cfrach"], units: ["%", "%", "%"], domains: [[0, 100], [0, 100], [0, 100]], type: "clouds" }
-                         },
+        "blicw":         { longname: dict("blicw.longname"),         description: dict("blicw.description"), unit: "g", domain: [0, 100] },
+        "blcwbase":      { longname: dict("blcwbase.longname"),      description: dict("blcwbase.description"), unit: "m", domain: [0, 3000] },
     },
     "wind": {
         "sfcwind0":      { longname: dict("sfcwind0.longname"),      description: dict("sfcwind0.description"),
@@ -113,18 +115,14 @@ const cParameters = {
         }
     }),
     "general": {
+        "pfd_tot":       { longname: dict("pfd_tot.longname"),       description: dict("pfd_tot.description"), unit: "km", domain: [0, 1000], wholeDay: true },
         "sfctemp":       { longname: dict("sfctemp.longname"),       description: dict("sfctemp.description"), unit: "°C", domain: [-10, 40] },
         "sfcdewpt":      { longname: dict("sfcdewpt.longname"),      description: dict("sfcdewpt.description"), unit: "°C", domain: [-20, 30] },
         "mslpress":      { longname: dict("mslpress.longname"),      description: dict("mslpress.description"), unit: "hPa", domain: [980, 1040] },
         "rain1":         { longname: dict("rain1.longname"),         description: dict("rain1.description"), unit: "mm/h", domain: [0, 10] },
         "cape":          { longname: dict("cape.longname"),          description: dict("cape.description"), unit: "J/kg", domain: [0, 2000] },
-    },
-    "experimental": {
-        "pfd_tot":       { longname: dict("pfd_tot.longname"),       description: dict("pfd_tot.description"), unit: "km", domain: [0, 1000], wholeDay: true },
         "sfcsunpct":     { longname: dict("sfcsunpct.longname"),     description: dict("sfcsunpct.description"), unit: "%", domain: [0, 100] },
         "sfcshf":        { longname: dict("sfcshf.longname"),        description: dict("sfcshf.description"), unit: "W/m²", domain: [-50, 400] },
-        "blicw":         { longname: dict("blicw.longname"),         description: dict("blicw.description"), unit: "g", domain: [0, 100] },
-        "blcwbase":      { longname: dict("blcwbase.longname"),      description: dict("blcwbase.description"), unit: "m", domain: [0, 3000] },
     },
 };
 
@@ -157,6 +155,8 @@ const cLayers = {
     overlays: {
         [dict("Airspace")]: L.tileLayer('https://api.tiles.openaip.net/api/data/openaip/{z}/{x}/{y}.png?apiKey=decca790b0f2ea35ecd0534d2385b8b5', {
             attribution: 'Airspace by <a href="https://www.openaip.net" target="_blank">OpenAip</a>',
+            pane: 'airspacePane',
+            opacity: 0.7,
         })
     },
 };
@@ -165,7 +165,7 @@ const cDefaults = {
     // The data is expected at forecastServerResults/OUT/<region>/<run date>/<day>
     forecastServerResults: "../results",
     baseLayer: dict("Topography"),
-    overlays: [],
+    overlays: [dict("Airspace")],
     zoom: 7,
     minZoom: 3,
     maxZoom: 14,

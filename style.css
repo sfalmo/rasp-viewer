@@ -182,7 +182,7 @@ body {
     padding: 5px;
 }
 .rasp-control {
-    max-width: 452px;
+    max-width: 350px;
 }
 .rasp-control .leaflet-control-layers-toggle {
     background-size: 26px 26px;
