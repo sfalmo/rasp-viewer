@@ -249,7 +249,7 @@ var SkewT = function(div) {
         skewtbg.append("g").call(cloudAxis);
         skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "start").attr("x", 5).attr("y", -13).text("cloud fraction");
         skewtbg.append("g").call(cloudWaterAxis).selectAll("text").style("fill", "#380");
-        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "start").attr("x", 5).attr("y", 20).style("fill", "#380").text("cloud water");
+        skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "start").attr("x", 5).attr("y", 20).style("fill", "#380").text("cloud water (g/kg)");
         skewtbg.append("g").call(windAxis);
         skewtbg.append("text").attr("font-size", 11).attr("text-anchor", "middle").attr("x", 15 * w / 16).attr("y", -13).text("v (m/s)");
     };
@@ -365,7 +365,7 @@ var SkewT = function(div) {
 
         var cloudWaterPath = d3.line()
             .curve(d3.curveMonotoneY)
-            .x(function(d, i) { return cloudWaterScale(d.qcloud);})
+            .x(function(d, i) { return cloudWaterScale(d.qcloud * 1000);})
             .y(function(d, i) { return y(d.press); } );
 
         var cloudWaterLine = skewtgroup.selectAll("cloudwaterlines")

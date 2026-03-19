@@ -31,6 +31,9 @@ L.Control.RASPControl = L.Control.extend({
         this.loadingBlipmap = false;
         this.loadingPlot = false;
 
+        this.lastParameterChoices = {};
+        this.renderOptions = {};
+
         this.datetimeSelector = datetimeSelector(this).addTo(map);
         this.datetimeSelector.init()
             .then(() => {
@@ -38,6 +41,10 @@ L.Control.RASPControl = L.Control.extend({
             })
             .catch(() => {
                 this.validIndicator.update(dict("dataMissing"), false);
+                this.loadingMeta = false;
+                this.loadingBlipmap = false;
+                this.loadingPlot = false;
+                this._hideLoadingAnimationMaybe();
             });
 
         this.on('modelDayChange', () => { this.modelDayChange(); });
@@ -79,6 +86,7 @@ L.Control.RASPControl = L.Control.extend({
         this._raspPanel = L.DomUtil.create('div', "leaflet-control-layers-list", this._container);
 
         var parameterDiv = L.DomUtil.create('div', 'mb-2', this._raspPanel);
+
         this.parameterCategories = L.DomUtil.create('div', 'btn-group d-flex mb-1', parameterDiv);
         this.parameterCategories.setAttribute('data-bs-toggle', 'buttons');
         for (const category in cParameters) {
@@ -88,7 +96,7 @@ L.Control.RASPControl = L.Control.extend({
             catRadio.type = "radio";
             catRadio.value = category;
             catLabel.style.cursor = "pointer";
-            catLabel.innerHTML += `<svg viewBox="0 0 12 12" class="parameterCategoryIcon"><use href="img/sprites.svg#${category}" xlink:href="img/sprites.svg#${category}"></use></svg>`;
+            catLabel.innerHTML += `<svg viewBox="0 0 40 40" width="100%"><use href="img/sprites.svg#${category}" xlink:href="img/sprites.svg#${category}"></use></svg>`;
             catLabel.title = dict("parameterCategory_" + category + "_title");
             catRadio.id = catLabel.title;
             catLabel.htmlFor = catRadio.id;
@@ -101,13 +109,13 @@ L.Control.RASPControl = L.Control.extend({
         this.parameterSelect = L.DomUtil.create('select', 'form-select form-select-sm fw-bold my-1', parameterDiv);
         this.parameterSelect.onchange = () => { this.parameterChange(); };
         this.parameterSelect.title = dict("parameterSelect_title");
+
         this.pressSliderInfo = L.DomUtil.create('div', '', parameterDiv);
         this.pressSlider = L.DomUtil.create('input', 'form-range', parameterDiv);
         this.pressSlider.id = 'pressSlider';
         this.pressSlider.type = 'range';
         this.pressSlider.title = dict('press.longname');
         this.pressSlider.value = 0;
-        this.pressSlider.onchange = () => { this.parameterChange(); };
         this.pressSliderDatalist = L.DomUtil.create('datalist', '', parameterDiv);
         this.pressSliderDatalist.id = 'press_levels';
         this.pressSlider.setAttribute('list', 'press_levels');
@@ -116,7 +124,21 @@ L.Control.RASPControl = L.Control.extend({
                 var press = this.parameters.press_levels[this.pressSlider.value];
                 this.pressSliderInfo.innerHTML = dict("press.longname") + ": " + press + " hPa (≈ FL" + press2FL(press) + ", " + (Math.round(press2height(press, "m") / 10) * 10) + " m)";
             }
+            this.parameterChange();
         };
+
+        this.cloudToggleDiv = L.DomUtil.create('div', '', parameterDiv); // TODO: generalize parameter rendering options
+        var cloudToggleLabel = L.DomUtil.create('label', '', this.cloudToggleDiv);
+        cloudToggleLabel.title = dict("clouds");
+        this.cloudToggleCheckbox = L.DomUtil.create('input', 'me-1', cloudToggleLabel);
+        this.cloudToggleCheckbox.type = 'checkbox';
+        this.cloudToggleCheckbox.onchange = (e) => {
+            this.renderOptions["withClouds"] = e.target.checked;
+            this.parameterChange();
+        };
+        var cloudToggleText = L.DomUtil.create('span', '', cloudToggleLabel);
+        cloudToggleText.innerHTML = dict("clouds");
+
         var parameterDetails = L.DomUtil.create('details', '', parameterDiv);
         var parameterSummary = L.DomUtil.create('summary', '', parameterDetails);
         parameterSummary.title = dict("parameterDetails_title");
@@ -138,7 +160,7 @@ L.Control.RASPControl = L.Control.extend({
         var interactiveDiv = L.DomUtil.create('div', 'mb-2', this._raspPanel);
         var interactiveButtons = L.DomUtil.create('div', 'input-group', interactiveDiv);
         var interactiveIcon = L.DomUtil.create('span', 'input-group-text bg-light', interactiveButtons);
-        interactiveIcon.innerHTML += `<svg viewBox="0 0 12 12" height="1.5rem" width="1.5rem"><use href="img/sprites.svg#interactive" xlink:href="img/sprites.svg#interactive"></use></svg>`;
+        interactiveIcon.innerHTML += `<svg viewBox="0 0 40 40" height="1.5rem" width="1.5rem"><use href="img/sprites.svg#interactive" xlink:href="img/sprites.svg#interactive"></use></svg>`;
         interactiveIcon.title = dict("interactiveIcon_title");
         this.crosssectionButton = L.DomUtil.create('button', 'btn btn-outline-primary', interactiveButtons);
         this.crosssectionButton.innerHTML = dict("crosssection");
@@ -153,7 +175,7 @@ L.Control.RASPControl = L.Control.extend({
 
         var meteogramDiv = L.DomUtil.create('div', '', this._raspPanel);
         var meteogramLabel = L.DomUtil.create('label', '', meteogramDiv);
-        meteogramLabel.title = dict("meteogramCheckbox_label");
+        meteogramLabel.title = dict("Meteograms");
         this.meteogramCheckbox = L.DomUtil.create('input', 'me-1', meteogramLabel);
         this.meteogramCheckbox.type = 'checkbox';
         this.meteogramCheckbox.onchange = () => { this.toggleMeteograms(); };
@@ -263,7 +285,6 @@ L.Control.RASPControl = L.Control.extend({
             for (const press of this.parameters.press_levels) {
                 this.pressSliderDatalist.innerHTML += `<option value="${press}"></option>`;
             }
-            this.parameterCategoryChange();
             this.raspLayer.renderBoundary(this.parameters.boundary);
             if (this.meteogramOverlay) {
                 this.meteogramOverlay.remove();
@@ -291,17 +312,19 @@ L.Control.RASPControl = L.Control.extend({
             this.pressSlider.min = 0;
             this.pressSlider.max = this.parameters.press_levels.length - 1;
             this.pressSlider.step = 1;
+            this.cloudToggleDiv.style.display = "block";
             this.pressSlider.oninput();
         } else {
             this.parameterSelect.style.display = "block";
             this.pressSlider.style.display = "none";
             this.pressSliderInfo.style.display = "none";
+            this.cloudToggleDiv.style.display = "none";
             for (const parameterKey in cParameters[category]) {
                 var parameter = cParameters[category][parameterKey];
                 var required = parameter.composite ? parameter.composite.of : [parameterKey];
                 if (required.reduce((g, r) => g && this.parameters.available.has(r), true)) { // check if we have all parameters that we need
                     this.parameterSelect.add(new Option(cParameters[category][parameterKey].longname, parameterKey));
-                    if (!currentParameterKey && parameterKey == cDefaults.parameter || parameterKey == currentParameterKey) {
+                    if (!currentParameterKey && parameterKey == cDefaults.parameter || parameterKey == currentParameterKey || parameterKey == this.lastParameterChoices[category]) {
                         this.parameterSelect.options[this.parameterSelect.options.length - 1].selected = true;
                     }
                 }
@@ -310,6 +333,8 @@ L.Control.RASPControl = L.Control.extend({
         this.parameterChange();
     },
     parameterChange: function() {
+        var category = this.getParameterCategory();
+        var parameterKey = this.getParameterKey();
         var parameter = this.getParameter();
         this.parameterDescription.innerHTML = parameter.description;
         this.datetimeSelector.enableTimeControl();
@@ -317,6 +342,7 @@ L.Control.RASPControl = L.Control.extend({
             this.datetimeSelector.disableTimeControl();
         }
         this.update();
+        this.lastParameterChoices[category] = parameterKey;
     },
     _loading: function() {
         return this.loadingMeta || this.loadingBlipmap || this.loadingPlot;
@@ -339,7 +365,7 @@ L.Control.RASPControl = L.Control.extend({
         var parameterKey = this.getParameterKey();
         var parameter = this.getParameter();
         var urls = this.getDataUrls(dir, parameterKey, parameter, time);
-        this._updateBlipmap(urls.geotiffUrls, parameter);
+        this._updateBlipmap(urls.geotiffUrls, parameter, this.renderOptions);
         this._updateMeta(urls.metaUrl, parameter.longname, day);
     },
     _updateMeta: function(metaUrl, parameterLongname, day) {
@@ -368,7 +394,7 @@ L.Control.RASPControl = L.Control.extend({
         this.loadingMeta = true;
         this._armLoadingAnimation();
     },
-    _updateBlipmap: function(geotiffUrls, parameter) {
+    _updateBlipmap: function(geotiffUrls, parameter, renderOptions) {
         Promise.all(geotiffUrls.map(url => fetch(url + "?timestamp=" + this.parameters.timestamp)))
             .then(responses => {
                 if (responses.every(response => response.ok)) {
@@ -384,7 +410,7 @@ L.Control.RASPControl = L.Control.extend({
                 return Promise.all(geotiffs.map(geotiff => geotiff.getImage()));
             })
             .then(images => {
-                this.raspLayer.update(images, parameter);
+                this.raspLayer.update(images, parameter, renderOptions);
             })
             .catch(err => {
                 this.raspLayer.invalidate();

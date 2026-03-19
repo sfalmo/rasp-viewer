@@ -60,7 +60,7 @@ L.RaspLayer = L.Layer.extend({
         }
         this.boundaryPolygon = undefined;
     },
-    update: function(georasters, parameter) {
+    update: function(georasters, parameter, renderOptions) {
         this.valid = true;
         if (parameter.composite) {
             this.units = parameter.composite.units;
@@ -86,11 +86,11 @@ L.RaspLayer = L.Layer.extend({
 	    .then(noDataValue => {
           this.data.noDataValue = Number(noDataValue.substring(0, noDataValue.length - 1));
           this.valueIndicator.updateParameter(parameter.longname);
-          this._render(parameter);
+          this._render(parameter, renderOptions);
           this._updateValueIndicator(this._lastLat, this._lastLng);
 	    });
     },
-    _render: function(parameter) {
+    _render: function(parameter, renderOptions) {
         this.windbarbRenderer.clear();
         this.overlay.setBounds([L.CRS.EPSG3857.unproject(L.point(this.data.xmin, this.data.ymin)), L.CRS.EPSG3857.unproject(L.point(this.data.xmax, this.data.ymax))]);
         // The base parameter is always displayed as a heatmap (currently realized via the plotty renderer)
@@ -116,6 +116,9 @@ L.RaspLayer = L.Layer.extend({
             }
             if (parameter.composite.type == "press") {
                 this.plottyRenderer.render(this.data, 0, {domain: this.domains[0], unit: this.units[0], mult: this.mults[0], colorscale: 'verticalmotion'});
+                if (renderOptions["withClouds"]) {
+                    this.plottyRenderer.render(this.data, 3, {domain: this.domains[3], unit: this.units[3], mult: this.mults[3], colorscale: 'clouds', append: true});
+                }
                 this.windbarbRenderer.render(this.data, 1, 2);
             }
         }

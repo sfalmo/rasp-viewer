@@ -1,54 +1,49 @@
 <svg xmlns="http://www.w3.org/2000/svg">
-  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10.583 10.583" id="thermal">
-    <path d="M4.895 1.588v8.201h.794V1.588h-.794z" color="currentColor" font-weight="400" font-family="sans-serif" overflow="visible"></path>
-    <g color="currentColor" font-weight="400" font-family="sans-serif" fill-rule="evenodd">
-      <path d="M5.292.672l.793 1.373H4.498z" overflow="visible"></path>
-      <path d="M5.291.46l-.092.16-.885 1.53H6.27L5.29.46zm0 .423l.611 1.056h-1.22L5.29.883z" overflow="visible"></path>
-    </g>
-    <path d="M7.541 1.588c0 5.358 1.365 8.115 1.365 8.115l.71-.355s-1.282-2.535-1.282-7.76h-.793z" color="currentColor" font-weight="400" font-family="sans-serif" overflow="visible"></path>
-    <g color="currentColor" font-weight="400" font-family="sans-serif" fill-rule="evenodd">
-      <path d="M7.938.672l.793 1.373H7.144z" overflow="visible"></path>
-      <path d="M7.938.46l-.092.16-.885 1.53h1.953L7.938.46zm0 .423l.609 1.056H7.328l.61-1.056z" overflow="visible"></path>
-    </g>
-    <g color="currentColor" font-weight="400" font-family="sans-serif">
-      <path d="M2.248 1.588c0 5.225-1.28 7.76-1.28 7.76l.71.355s1.365-2.757 1.365-8.115h-.795z" overflow="visible"></path>
-      <g fill-rule="evenodd">
-        <path d="M2.646.672l.794 1.373H1.852z" overflow="visible"></path>
-        <path d="M2.646.46l-.091.16-.887 1.53h1.955L2.646.46zm0 .423l.61 1.056h-1.22l.61-1.056z" overflow="visible"></path>
-      </g>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="thermal">
+    <g color="currentColor" fill="currentColor" stroke="currentColor" stroke-width="0">
+      <path d="M 18.356034,5.5180327 V 39.478161 h 3.287932 V 5.5180327 Z" />
+      <path d="m 29.313051,5.5180327 c 0,22.1873393 5.65243,33.6040043 5.65243,33.6040043 l 2.940091,-1.470046 c 0,0 -5.308728,-10.497369 -5.308728,-32.1339583 z" />
+      <path d="m 7.3948752,5.5180326 c 0,21.6365894 -5.3004468,32.1339584 -5.3004468,32.1339584 L 5.03452,39.122037 c 0,0 5.652429,-11.416666 5.652429,-33.6040044 z" />
+      <path d="M 4.9521981,8 9.0020707,1.001754 13.047802,8 Z" />
+      <path d="M 15.952198,8 20.002071,1.001754 24.047802,8 Z" />
+      <path d="M 26.952198,8 31.002071,1.001754 35.047802,8 Z" />
     </g>
   </symbol>
-  <symbol xmlnsI="&amp;amp;#38;ns_ai;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="cloud">
-    <path d="M25.674 8.428c-3.188 0-5.95 1.788-7.536 4.418-1.218-.862-2.662-1.402-4.24-1.402-3.691 0-6.716 2.8-7.496 6.434-3.593.2-6.433 3.227-6.433 6.842 0 3.71 2.974 7.001 6.797 7.001h26.406c3.809 0 6.797-3.262 6.797-7 0-3.229-2.281-6.026-5.338-6.682v-.002c0-5.228-3.96-9.609-8.957-9.609zm0 3c3.235 0 5.958 2.872 5.958 6.61 0 .307-.035.714-.073 1.056a1.5 1.5 0 00.225.97c.009.017.001.008.012.027.006.012.032.036.039.048a1.5 1.5 0 00.125.15c.057.079.08.14.193.236.062.052.2.057.287.104a1.5 1.5 0 00.197.073 1.5 1.5 0 00.004 0c.17.068.3.18.49.18a1.5 1.5 0 00.042-.001c2.065-.057 3.796 1.725 3.796 3.84 0 2.128-1.737 4-3.797 4H6.766c-2.046 0-3.797-1.924-3.797-4 0-2.13 1.696-3.88 3.797-3.88.45 0 .562-.007.574-.004A1.5 1.5 0 009.2 19.45c.13-2.863 2.26-5.006 4.696-5.006 1.447 0 2.656.643 3.543 1.784a1.5 1.5 0 002.61-.458c.838-2.577 3.051-4.342 5.624-4.342zm7.457 6.454c.006 0 .01.006.015.006-.02 0-.037-.006-.057-.005h.043z" color="currentColor" font-weight="400" font-family="sans-serif" overflow="visible" stroke-linejoin="round" iExtraneous="self" stroke-width="7.361" stroke-miterlimit="10"></path>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="cloud">
+    <path stroke-width="3" stroke="currentColor" color="currentColor" fill="none" d="m 38.500268,24.645442 c 0,2.933963 -2.363471,5.501181 -5.297434,5.501181 H 6.7971659 c -2.9339631,0 -5.2974335,-2.607968 -5.2974335,-5.501181 0,-2.933964 2.3634704,-5.378933 5.2974335,-5.378933 0.3259959,0 0.6112423,-0.04075 0.9372382,0.04075 0.162998,-3.585955 2.8932139,-6.438419 6.1939219,-6.438419 1.915226,0 3.585955,0.896488 4.726941,2.36347 1.018737,-3.137711 3.789702,-5.3789325 7.049661,-5.3789325 4.115699,0 7.457157,3.6267045 7.457157,8.1091485 0,0.407494 -0.04075,0.855739 -0.0815,1.222484 0.04075,0 0.04075,0.122249 0.0815,0.122249 2.933963,-0.0815 5.338183,2.404219 5.338183,5.338183 z"></path>
   </symbol>
   <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="interactive">
-    <g color="currentColor" stroke="currentColor" font-weight="400" font-family="sans-serif">
-      <path stroke-width="4" d="M 20,0 V 15"></path>
-      <path stroke-width="4" d="M 0,20 H 15"></path>
-      <path stroke-width="4" d="M 20,40 V 25"></path>
-      <path stroke-width="4" d="M 40,20 H 25"></path>
-      <circle cx="20" cy="20" r="1"></circle>
+    <g color="currentColor" stroke="currentColor" font-family="sans-serif">
+      <path stroke-width="4" d="M 20,0 V 15" />
+      <path stroke-width="4" d="M 0,20 H 15" />
+      <path stroke-width="4" d="M 20,40 V 25" />
+      <path stroke-width="4" d="M 40,20 H 25" />
+      <circle cx="20" cy="20" r="1" />
     </g>
   </symbol>
-  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10.583 10.583" id="general">
-    <g color="currentColor" font-weight="400" font-family="sans-serif">
-      <path d="M5.291 1.223c-1.22 0-2.439.464-3.367 1.392a4.77 4.77 0 000 6.737l.56-.563a3.961 3.961 0 010-5.611 3.963 3.963 0 015.614 0 3.961 3.961 0 010 5.611l.562.563a4.77 4.77 0 000-6.737 4.751 4.751 0 00-3.369-1.392z" overflow="visible"></path>
-      <path d="M.531 5.719v.529h1.32v-.53H.532zm8.199 0v.529h1.32v-.53H8.73zM5.027 1.223v1.32h.53v-1.32h-.53zM6.83 3.357L4.98 5.74l.626.487 1.852-2.381-.627-.489z" overflow="visible"></path>
-      <path d="M5.82 5.953a.53.53 0 11-1.057 0 .53.53 0 011.058 0z" overflow="visible"></path>
-      <path d="M5.291 5.027a.932.932 0 00-.926.926c0 .507.42.926.926.926a.932.932 0 00.926-.926.932.932 0 00-.926-.926zm0 .793c.078 0 .133.055.133.133a.128.128 0 01-.133.133c-.078 0-.13-.055-.13-.133 0-.078.052-.133.13-.133z" overflow="visible" fill="currentColor"></path>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="general">
+    <g color="currentColor" fill="currentColor" stroke="currentColor" stroke-width="3">
+      <path fill="none" d="m 7.8294323,35.170571 a 17.211784,17.211784 0 0 1 0,-24.341139 17.211784,17.211784 0 0 1 24.3411385,0 17.211784,17.211784 0 0 1 0,24.341139" />
+      <path d="M 2.7882171,23 6.4391999,23" />
+      <path d="m 33.560802,23 3.650983,0" />
+      <path d="m 20,9.4392002 0,-3.6509831" />
+      <path d="m 20,23 7.301969,-9.388246" />
+      <circle cx="20" cy="22.881145" r="2" />
     </g>
   </symbol>
-  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10.583 10.583" id="wave">
-    <g color="currentColor" font-weight="400" font-family="sans-serif">
-      <path d="M3.969 3.82L.207 9.027l.645.465 3.117-4.316 3.117 4.316.644-.465L3.97 3.82z" overflow="visible"></path>
-      <path d="M6.615 4.393L5.246 6.102l.62.496.747-.936L8.422 7.92l.619-.494-2.426-3.033zM3.824 1.717C1.898 1.483.39 2.422.39 2.422l.28.45s2.392-1.508 4.907.001c1.392.835 2.654.703 3.531.35.878-.354 1.407-.926 1.407-.926l-.389-.36s-.453.486-1.217.793c-.764.308-1.805.442-3.058-.31a5.1 5.1 0 00-2.026-.703z" overflow="visible"></path>
-      <path d="M3.824.395C1.898.16.39 1.098.39 1.098l.28.449S3.062.04 5.577 1.549c1.392.835 2.654.703 3.531.35.878-.354 1.407-.926 1.407-.926l-.389-.36s-.453.487-1.217.795c-.764.308-1.805.44-3.058-.312A5.096 5.096 0 003.824.395z" overflow="visible"></path>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="wave">
+    <g color="currentColor" stroke="currentColor" fill="none">
+      <path stroke-width="3" d="M 2,37 15,20 29,37" />
+      <path stroke-width="3" d="M 20.532935,28.149238 26,21 34.664529,31.521214" />
+      <path stroke-width="2" d="m 1,12 c 0,0 9,-5 19,0.008 10,5.008 19,-1.992 19,-1.992" />
+      <path stroke-width="2" d="m 1,6.992 c 0,0 9,-5 19,0.008 10,5.008 19,-1.992 19,-1.992" />
     </g>
   </symbol>
-  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="-48 -33 10 10" id="wind">
-    <g stroke-width="3.447" color="currentColor" font-weight="400" font-family="sans-serif">
-      <path d="M-47.29-25.999l-.24.711 3.92 1.321 5.156-7.357-.614-.43-4.834 6.897-3.388-1.142z" overflow="visible"></path>
-      <path d="M-46.665-26.89l-.24.711 3.653 1.232.24-.711-3.653-1.232zm2.451-.275l-.24.711 1.827.616.24-.711-1.827-.616z" overflow="visible"></path>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" id="wind">
+    <g color="currentColor" stroke="currentColor" fill="none" stroke-width="3">
+      <path d="M 37.969778,5.205165 14.934724,33.890531 1.4752195,27.845268" />
+      <path d="M 17.64473,30.515782 4.1852259,24.470519" />
+      <path d="M 20.354736,27.141033 13.624985,24.118402" />
     </g>
   </symbol>
 </svg>

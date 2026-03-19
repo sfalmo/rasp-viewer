@@ -188,10 +188,6 @@ body {
     background-size: 26px 26px;
     background-image: url(img/rasp_control.svg);
 }
-.parameterCategoryIcon {
-    width: 100%;
-    fill: currentColor;
-}
 .parameterDescription {
     display: inline-block;
     max-height: 8em;

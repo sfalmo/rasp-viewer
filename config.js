@@ -44,8 +44,12 @@ const cColorscales = {
         values: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
     },
     "pfd": {
-        colors: ["#ffffff", "#fec6fe", "#fc64fc", "#7f93e2", "#2e5de5", "#009900", "#57fc00", "#ffe900", "#f08200", "#ae1700"],
+        colors: ["#ffffff00", "#fec6fe", "#fc64fc", "#7f93e2", "#2e5de5", "#009900", "#57fc00", "#ffe900", "#f08200", "#ae1700"],
         values: [0, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1]
+    },
+    "rain": {
+        colors: ["#ffffff00", "#edf8fb", "#bfd3e6", "#9ebcda", "#8c96c6", "#8856a7", "#810f7c"],
+        values: [0, 0.01, 0.2, 0.4, 0.6, 0.8, 1]
     }
 };
 
@@ -101,29 +105,29 @@ const cParameters = {
                          },
         "blwindshear":   { longname: dict("blwindshear.longname"),   description: dict("blwindshear.description"), unit: "m/s", domain: [0, 30] },
     },
+    "general": {
+        "pfd_tot":       { longname: dict("pfd_tot.longname"),       description: dict("pfd_tot.description"), unit: "km", domain: [0, 1000], colorscale: "pfd", wholeDay: true },
+        "sfctemp":       { longname: dict("sfctemp.longname"),       description: dict("sfctemp.description"), unit: "°C", domain: [-10, 40] },
+        "sfcdewpt":      { longname: dict("sfcdewpt.longname"),      description: dict("sfcdewpt.description"), unit: "°C", domain: [-20, 30] },
+        "mslpress":      { longname: dict("mslpress.longname"),      description: dict("mslpress.description"), unit: "hPa", domain: [980, 1040] },
+        "rain1":         { longname: dict("rain1.longname"),         description: dict("rain1.description"), unit: "mm/h", domain: [0, 10000], mult: 1000, colorscale: "rain" },
+        "cape":          { longname: dict("cape.longname"),          description: dict("cape.description"), unit: "J/kg", domain: [0, 2000] },
+        "sfcsunpct":     { longname: dict("sfcsunpct.longname"),     description: dict("sfcsunpct.description"), unit: "%", domain: [0, 100] },
+        "sfcshf":        { longname: dict("sfcshf.longname"),        description: dict("sfcshf.description"), unit: "W/m²", domain: [-50, 400] },
+    },
     "wave": (hPa) => ({
         [`press${hPa}`]: {
             longname: `${dict("press.longname")} ${hPa}hPa`,
             description: dict("press.description"),
             composite: {
-                of: [`press${hPa}`, `press${hPa}wspd`, `press${hPa}wdir`],
-                units: ["m/s", "m/s", "°"],
-                domains: [[-250, 250], [0, 30]],
-                mults: [100, 1, 1],
+                of: [`press${hPa}`, `press${hPa}wspd`, `press${hPa}wdir`, `press${hPa}cldfra`],
+                units: ["m/s", "m/s", "°", "%"],
+                domains: [[-250, 250], [0, 30], [0, 360], [0, 100]],
+                mults: [100, 1, 1, 1],
                 type: "press"
-            }
+            },
         }
     }),
-    "general": {
-        "pfd_tot":       { longname: dict("pfd_tot.longname"),       description: dict("pfd_tot.description"), unit: "km", domain: [0, 1000], wholeDay: true },
-        "sfctemp":       { longname: dict("sfctemp.longname"),       description: dict("sfctemp.description"), unit: "°C", domain: [-10, 40] },
-        "sfcdewpt":      { longname: dict("sfcdewpt.longname"),      description: dict("sfcdewpt.description"), unit: "°C", domain: [-20, 30] },
-        "mslpress":      { longname: dict("mslpress.longname"),      description: dict("mslpress.description"), unit: "hPa", domain: [980, 1040] },
-        "rain1":         { longname: dict("rain1.longname"),         description: dict("rain1.description"), unit: "mm/h", domain: [0, 10] },
-        "cape":          { longname: dict("cape.longname"),          description: dict("cape.description"), unit: "J/kg", domain: [0, 2000] },
-        "sfcsunpct":     { longname: dict("sfcsunpct.longname"),     description: dict("sfcsunpct.description"), unit: "%", domain: [0, 100] },
-        "sfcshf":        { longname: dict("sfcshf.longname"),        description: dict("sfcshf.description"), unit: "W/m²", domain: [-50, 400] },
-    },
 };
 
 const cMeteograms = {
